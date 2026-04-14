@@ -1,0 +1,34 @@
+<div class="search-container">
+    <h1>Find tutor for your personal goals</h1>
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search...">
+    <p>You are looking for: {{ searchQuery }}</p>   
+</div>
+
+<div class="main">
+    <h1>KBTU Tutor</h1>
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Subject">
+    <input type="text" [(ngModel)]="tutorName" placeholder="Enter tutor name">
+
+    <button (click)="onSearch()">Search</button>
+
+</div>
+
+<div class="container">
+    @if (searchQuery.length > 0) {
+        <strong><p>You are looking for: {{ searchQuery }}</p></strong>
+        <h2>Available Tutors</h2>
+        <div class="tutor-grid">
+            @for (tutor of tutors; track tutor.id) {
+                <div class="tutor-card">
+                    <h3>{{ tutor.name }}</h3>
+                    <p>{{ tutor.subject }}</p>
+                    <p>Rating: {{ tutor.rating }}</p>
+                    <button (click)="selectTutor(tutor)">Select</button>
+                </div>
+            }
+        </div>
+        
+
+    }
+
+</div>
