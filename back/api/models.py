@@ -1,53 +1,69 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
+
+class ActiveTutorManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(user__is_active=True)
+
+    def with_subject(self, subject_id):
+        return self.get_queryset().filter(subject_id=subject_id)
+
+
 class Subject(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="Название предмета")
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Предмет"
-        verbose_name_plural = "Предметы"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
 
 class TutorProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='tutor_profile')
-    experience = models.PositiveIntegerField(verbose_name="Опыт работы (лет)")
-    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, related_name='tutors')
+    objects = models.Manager()
+    active = ActiveTutorManager()
 
-    class Meta:
-        verbose_name = "Профиль тьютора"
-        verbose_name_plural = "Профили тьюторов"
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='tutor_profile')
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, related_name='tutors')
+    experience_years = models.PositiveIntegerField(default=0)
+    bio = models.TextField(blank=True)
+    hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"Тьютор {self.user.username} ({self.subject})"
+        return f"Tutor: {self.user.username}"
 
 
 class LessonSlot(models.Model):
     tutor = models.ForeignKey(TutorProfile, on_delete=models.CASCADE, related_name='slots')
-    date = models.DateField(verbose_name="Дата")
-    time = models.TimeField(verbose_name="Время")
-    is_booked = models.BooleanField(default=False, verbose_name="Забронировано")
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    is_booked = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = "Слот занятия"
-        verbose_name_plural = "Слоты занятий"
-        unique_together = ('tutor', 'date', 'time')
+        ordering = ['start_time']
+        unique_together = ('tutor', 'start_time')
 
     def __str__(self):
-        return f"Слот {self.tutor.user.username}: {self.date} в {self.time}"
+        return f"{self.tutor.user.username}: {self.start_time} - {self.end_time}"
 
 
 class Booking(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_bookings')
+    STATUS_CHOICES = [
+        ('Confirmed', 'Confirmed'),
+        ('Cancelled', 'Cancelled'),
+        ('Completed', 'Completed'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     lesson_slot = models.OneToOneField(LessonSlot, on_delete=models.CASCADE, related_name='booking')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Время создания брони")
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Confirmed')
 
     class Meta:
-        verbose_name = "Бронирование"
-        verbose_name_plural = "Бронирования"
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.student.username} записан на {self.lesson_slot}"
+        return f"{self.student.username} -> {self.lesson_slot}"
