@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
+
+User = get_user_model()
 from .models import Subject, TutorProfile, LessonSlot, Booking
 
 
@@ -69,10 +70,12 @@ class TutorProfileSerializer(serializers.ModelSerializer):
 
 class LessonSlotSerializer(serializers.ModelSerializer):
     tutor_username = serializers.CharField(source='tutor.user.username', read_only=True)
+    tutor_subject = serializers.CharField(source='tutor.subject.name', read_only=True, default=None)
+    tutor_hourly_rate = serializers.DecimalField(source='tutor.hourly_rate', max_digits=8, decimal_places=2, read_only=True)
 
     class Meta:
         model = LessonSlot
-        fields = ['id', 'tutor', 'tutor_username', 'start_time', 'end_time', 'is_booked']
+        fields = ['id', 'tutor', 'tutor_username', 'tutor_subject', 'tutor_hourly_rate', 'start_time', 'end_time', 'is_booked']
         read_only_fields = ['tutor', 'is_booked']
 
     def validate(self, data):

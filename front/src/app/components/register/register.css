@@ -1,6 +1,6 @@
 :host { display: block; }
 
-.login-page {
+.register-page {
   min-height: calc(100vh - 62px);
   display: flex;
   align-items: center;
@@ -9,24 +9,24 @@
   background: #eef2f7;
 }
 
-.login-card {
+.register-card {
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
   padding: 2.5rem 2rem;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 /* Brand */
-.login-brand {
+.register-brand {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   margin-bottom: 1.75rem;
 }
 
-.login-logo {
+.register-logo {
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -40,32 +40,31 @@
   flex-shrink: 0;
 }
 
-.login-brand-name {
+.register-brand-name {
   margin: 0;
   font-size: 1rem;
   color: #0f172a;
 }
 
-.login-brand-name strong {
-  color: #1d4ed8;
-}
+.register-brand-name strong { color: #1d4ed8; }
 
 /* Title */
-.login-title {
+.register-title {
   margin: 0 0 0.35rem;
   font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;
 }
 
-.login-sub {
+.register-sub {
   margin: 0 0 1.75rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #64748b;
+  line-height: 1.5;
 }
 
 /* Error */
-.login-error {
+.register-error {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -79,10 +78,10 @@
 }
 
 /* Form */
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1rem;
 }
 
 .field {
@@ -105,8 +104,8 @@
   font-family: inherit;
   color: #0f172a;
   background: #f8fafc;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
 .field-input:focus {
@@ -115,9 +114,7 @@
   background: #fff;
 }
 
-.field-input::placeholder {
-  color: #cbd5e1;
-}
+.field-input::placeholder { color: #cbd5e1; }
 
 .btn-submit {
   margin-top: 0.5rem;
@@ -138,18 +135,9 @@
   transition: opacity 0.15s, transform 0.1s;
 }
 
-.btn-submit:hover:not(:disabled) {
-  opacity: 0.92;
-}
-
-.btn-submit:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.btn-submit:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
+.btn-submit:hover:not(:disabled) { opacity: 0.92; }
+.btn-submit:active:not(:disabled) { transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.65; cursor: not-allowed; }
 
 /* Spinner */
 .spinner {
@@ -161,12 +149,10 @@
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Footer */
-.login-footer {
+.register-footer {
   margin: 1.5rem 0 0;
   text-align: center;
   font-size: 0.88rem;

@@ -6,7 +6,7 @@ import { AUTH_TOKEN_KEY } from '../auth/auth-storage';
  * Login/register requests are left without a token.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (req.url.includes('/auth/login/') || req.url.includes('/auth/register/')) {
+  if (req.url.includes('/auth/login/')) {
     return next(req);
   }
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
