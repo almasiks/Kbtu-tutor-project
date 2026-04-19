@@ -14,6 +14,22 @@ from .serializers import (
 )
 
 
+def api_root(_request):
+    return Response(
+        {
+            'auth': {
+                'register': '/api/auth/register/',
+                'login': '/api/auth/login/',
+                'logout': '/api/auth/logout/',
+            },
+            'tutors': '/api/tutors/',
+            'tutor_profile': '/api/tutors/profile/',
+            'slots': '/api/slots/',
+            'bookings': '/api/bookings/',
+            'subjects': '/api/subjects/',
+        }
+    )
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

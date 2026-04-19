@@ -1,34 +1,103 @@
-<div class="search-container">
-    <h1>Find tutor for your personal goals</h1>
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search...">
-    <p>You are looking for: {{ searchQuery }}</p>   
-</div>
+<div class="home">
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">KBTU Tutor</p>
+      <h1 class="hero-title">Найдите репетитора под ваши цели</h1>
+      <p class="hero-sub">
+        Фильтруйте по предмету и рейтингу, ищите по имени или направлению — список обновляется сразу.
+      </p>
+    </div>
+  </section>
 
-<div class="main">
-    <h1>KBTU Tutor</h1>
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Subject">
-    <input type="text" [(ngModel)]="tutorName" placeholder="Enter tutor name">
+  <section class="filters-panel" aria-labelledby="filters-heading">
+    <h2 id="filters-heading" class="visually-hidden">Фильтры поиска</h2>
+    <div class="filters-grid">
+      <label class="field">
+        <span class="field-label">Поиск</span>
+        <input
+          type="search"
+          class="field-input"
+          [(ngModel)]="quickSearch"
+          placeholder="Имя или предмет…"
+          autocomplete="off"
+        />
+      </label>
 
-    <button (click)="onSearch()">Search</button>
+      <label class="field">
+        <span class="field-label">Предмет</span>
+        <select class="field-input field-select" [(ngModel)]="subjectFilter">
+          <option value="">Все предметы</option>
+          @for (sub of subjectOptions; track sub) {
+            <option [value]="sub">{{ sub }}</option>
+          }
+        </select>
+      </label>
 
-</div>
+      <label class="field field-rating">
+        <span class="field-label">
+          Мин. рейтинг: <strong>{{ minRatingValue.toFixed(1) }}</strong>
+        </span>
+        <input
+          type="range"
+          class="field-range"
+          min="0"
+          max="5"
+          step="0.1"
+          [(ngModel)]="minRating"
+        />
+      </label>
 
-<div class="container">
-    @if (searchQuery.length > 0) {
-        <strong><p>You are looking for: {{ searchQuery }}</p></strong>
-        <h2>Available Tutors</h2>
-        <div class="tutor-grid">
-            @for (tutor of tutors; track tutor.id) {
-                <div class="tutor-card">
-                    <h3>{{ tutor.name }}</h3>
-                    <p>{{ tutor.subject }}</p>
-                    <p>Rating: {{ tutor.rating }}</p>
-                    <button (click)="selectTutor(tutor)">Select</button>
-                </div>
-            }
-        </div>
-        
+      <div class="filter-actions">
+        <button type="button" class="btn btn-primary" (click)="onSearch()">
+          К результатам
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="resetFilters()">
+          Сбросить
+        </button>
+      </div>
+    </div>
+  </section>
 
+  <section class="results" id="tutor-results">
+    <div class="results-head">
+      <h2 class="results-title">Репетиторы</h2>
+      <p class="results-count">
+        Найдено: <span class="count-num">{{ filteredTutors.length }}</span>
+        из {{ allTutors.length }}
+      </p>
+    </div>
+
+    @if (filteredTutors.length === 0) {
+      <div class="empty-state">
+        <p class="empty-title">Никого не нашли</p>
+        <p class="empty-text">Попробуйте смягчить фильтры или изменить запрос.</p>
+        <button type="button" class="btn btn-primary" (click)="resetFilters()">
+          Сбросить фильтры
+        </button>
+      </div>
+    } @else {
+      <div class="tutor-grid">
+        @for (tutor of filteredTutors; track tutor.id) {
+          <article class="tutor-card">
+            <div class="tutor-card-top">
+              <div class="tutor-avatar" aria-hidden="true">
+                {{ tutor.name.charAt(0) }}
+              </div>
+              <div class="tutor-meta">
+                <h3 class="tutor-name">{{ tutor.name }}</h3>
+                <span class="tutor-subject">{{ tutor.subject }}</span>
+              </div>
+            </div>
+            <div class="tutor-rating" [attr.aria-label]="'Рейтинг ' + tutor.rating">
+              <span class="rating-value">{{ tutor.rating }}</span>
+              <span class="rating-stars" aria-hidden="true">★★★★★</span>
+            </div>
+            <button type="button" class="btn btn-card" (click)="selectTutor(tutor)">
+              Выбрать
+            </button>
+          </article>
+        }
+      </div>
     }
-
+  </section>
 </div>

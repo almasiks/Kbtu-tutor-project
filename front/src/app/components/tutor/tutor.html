@@ -1,0 +1,37 @@
+@if (errorMessage) {
+  <p class="tutor-error">{{ errorMessage }}</p>
+}
+@if (loading) {
+  <p class="tutor-loading">Loading…</p>
+} @else if (tutor) {
+  <div class="tutor-profile">
+    <div class="header-card">
+      @if (tutor.image) {
+        <img [src]="tutor.image" alt="photo">
+      } @else {
+        <div class="avatar-placeholder" aria-hidden="true"></div>
+      }
+      <div class="main-info">
+        <h1>{{ tutor.name }}</h1>
+        <span class="badge">{{ tutor.subject }}</span>
+        <p class="rating"> {{ tutor.rating }} (24 reviews)</p>
+      </div>
+    </div>
+
+    <div class="details">
+      <h3>About Me</h3>
+      <p>{{ tutor.bio }}</p>
+
+      <div class="stats">
+        <div class="stat-item">
+          <strong>Price:</strong> {{ tutor.price }} KZT/hr
+        </div>
+        <div class="stat-item">
+          <strong>Experience:</strong> {{ tutor.experience }} years
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="book-now" (click)="bookLesson()">Book a Lesson</button>
+  </div>
+}

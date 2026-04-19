@@ -1,0 +1,17 @@
+.tutor-error,
+.tutor-loading {
+  padding: 24px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tutor-error {
+  color: #b00020;
+}
+
+.avatar-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #e8eef5;
+  border: 2px solid #003366;
+}
