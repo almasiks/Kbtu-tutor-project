@@ -7,14 +7,26 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:8080/api'; 
+  /** Django dev server: python manage.py runserver → http://127.0.0.1:8000 */
+  private baseUrl = 'http://127.0.0.1:8000/api';
   constructor(private http: HttpClient) {}
+
   getSubjects(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/subjects`);
+    return this.http.get<any[]>(`${this.baseUrl}/subjects/`);
   }
 
   login(credentials: any): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/login`, credentials);
-    
+    return this.http.post<any>(`${this.baseUrl}/auth/login/`, credentials);
+  }
+
+  getTutor(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/tutors/profile/${id}/`);
+  }
+
+  /** Backend expects `lesson_slot` = LessonSlot id, not tutor profile id. */
+  createBooking(lessonSlotId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/bookings/`, {
+      lesson_slot: lessonSlotId,
+    });
   }
 }
