@@ -34,6 +34,8 @@ def api_root(_request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
+    if request.data.get('is_tutor') and not (request.user.is_authenticated and request.user.is_staff):
+        return Response({'detail': 'Only admins can register tutor accounts.'}, status=status.HTTP_403_FORBIDDEN)
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
