@@ -1,17 +1,9 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home';
-import { LoginComponent } from './components/login/login';
-import { ProfileComponent } from './components/profile/profile';
-import { TutorDetailComponent } from './components/tutor/tutor';
-import { AdminComponent } from './components/admin/admin';
-import { RegisterComponent } from './components/register/register';
+import { Home } from './components/home/home';
+import { TutorDetails } from './components/tutor-details/tutor-details';
+import { authGuard } from './services/auth';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'tutor/:id', component: TutorDetailComponent },
-  { path: 'admin-panel', component: AdminComponent },
-  { path: '**', redirectTo: '' },
+  { path: '', component: Home },
+  { path: 'tutor/:id', component: TutorDetails, canActivate: [authGuard] },
 ];

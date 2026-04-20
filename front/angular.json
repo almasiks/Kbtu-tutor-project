@@ -2,12 +2,11 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm",
-    "analytics": "83c335dc-b2f2-4bf8-9808-530fe6ffdf8b"
+    "packageManager": "npm"
   },
   "newProjectRoot": "projects",
   "projects": {
-    "kbtu-tutor-front": {
+    "Front": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -27,7 +26,15 @@
             ],
             "styles": [
               "src/styles.css"
-            ]
+            ],
+            "server": "src/main.server.ts",
+            "outputMode": "server",
+            "security": {
+              "allowedHosts": []
+            },
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {
@@ -57,10 +64,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "kbtu-tutor-front:build:production"
+              "buildTarget": "Front:build:production"
             },
             "development": {
-              "buildTarget": "kbtu-tutor-front:build:development"
+              "buildTarget": "Front:build:development"
             }
           },
           "defaultConfiguration": "development"
