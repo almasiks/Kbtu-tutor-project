@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api';
+import type { Tutor } from '../../models/tutor';
 
 export interface TutorRow {
   id: number;
@@ -31,6 +33,7 @@ export class HomeComponent {
   quickSearch = '';
   subjectFilter = '';
   minRating = 0;
+  loadTutorsFromApi: any;
 
   get subjectOptions(): string[] {
     return [...new Set(this.allTutors.map((t) => t.subject))].sort((a, b) =>
