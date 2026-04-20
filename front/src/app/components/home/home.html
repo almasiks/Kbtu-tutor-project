@@ -6,6 +6,15 @@
       <p class="hero-sub">
         Фильтруйте по предмету и рейтингу, ищите по имени или направлению — список обновляется сразу.
       </p>
+      @if (listError) {
+        <p class="hero-banner" role="status">{{ listError }}</p>
+      }
+      @if (listLoadedFromApi) {
+        <p class="hero-banner hero-banner--ok" role="status">Список загружен с API.</p>
+      }
+      @if (isLoading) {
+        <p class="hero-banner" role="status">Загружаем репетиторов...</p>
+      }
     </div>
   </section>
 
@@ -44,6 +53,7 @@
           max="5"
           step="0.1"
           [(ngModel)]="minRating"
+          (ngModelChange)="onMinRatingChange($event)"
         />
       </label>
 
@@ -53,6 +63,9 @@
         </button>
         <button type="button" class="btn btn-ghost" (click)="resetFilters()">
           Сбросить
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="reloadFromApi()">
+          Обновить с сервера
         </button>
       </div>
     </div>
@@ -67,10 +80,22 @@
       </p>
     </div>
 
-    @if (filteredTutors.length === 0) {
+    @if (isLoading) {
+      <div class="tutor-grid">
+        @for (item of getSkeletonItems(); track item) {
+          <article class="tutor-card tutor-card-skeleton" aria-hidden="true">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-subtitle"></div>
+            <div class="skeleton skeleton-rating"></div>
+            <div class="skeleton skeleton-button"></div>
+          </article>
+        }
+      </div>
+    } @else if (filteredTutors.length === 0) {
       <div class="empty-state">
-        <p class="empty-title">Никого не нашли</p>
-        <p class="empty-text">Попробуйте смягчить фильтры или изменить запрос.</p>
+        <p class="empty-title">Упс! Репетиторов по вашему запросу пока нет.</p>
+        <p class="empty-text">Попробуйте изменить фильтры.</p>
         <button type="button" class="btn btn-primary" (click)="resetFilters()">
           Сбросить фильтры
         </button>
@@ -87,10 +112,21 @@
                 <h3 class="tutor-name">{{ tutor.name }}</h3>
                 <span class="tutor-subject">{{ tutor.subject }}</span>
               </div>
+              <span
+                class="status-badge"
+                [class.status-badge--available]="tutor.isAvailable"
+                [class.status-badge--busy]="!tutor.isAvailable"
+              >
+                {{ tutor.isAvailable ? 'Свободен' : 'Занят' }}
+              </span>
             </div>
             <div class="tutor-rating" [attr.aria-label]="'Рейтинг ' + tutor.rating">
               <span class="rating-value">{{ tutor.rating }}</span>
-              <span class="rating-stars" aria-hidden="true">★★★★★</span>
+              <span class="rating-stars" aria-hidden="true">
+                @for (isFilled of getStarStates(tutor.rating); track $index) {
+                  <span [class.star-filled]="isFilled" [class.star-empty]="!isFilled">★</span>
+                }
+              </span>
             </div>
             <button type="button" class="btn btn-card" (click)="selectTutor(tutor)">
               Выбрать

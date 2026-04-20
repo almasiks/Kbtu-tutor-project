@@ -61,6 +61,21 @@
   max-width: 36rem;
 }
 
+.hero-banner {
+  margin: 1rem 0 0;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.hero-banner--ok {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
 .filters-panel {
   max-width: 72rem;
   margin: -2rem auto 0;
@@ -242,6 +257,28 @@
   gap: 0.85rem;
 }
 
+.status-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-badge--available {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.status-badge--busy {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
 .tutor-avatar {
   width: 2.75rem;
   height: 2.75rem;
@@ -286,10 +323,18 @@
 }
 
 .rating-stars {
-  font-size: 0.65rem;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  gap: 0.1rem;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.star-filled {
   color: #f59e0b;
-  opacity: 0.85;
+}
+
+.star-empty {
+  color: #cbd5e1;
 }
 
 .btn-card {
@@ -321,6 +366,53 @@
   margin: 0 0 1.25rem;
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+.tutor-card-skeleton {
+  pointer-events: none;
+}
+
+.skeleton {
+  border-radius: 10px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 220% 100%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+}
+
+.skeleton-title {
+  height: 1rem;
+  width: 62%;
+}
+
+.skeleton-subtitle {
+  height: 0.8rem;
+  width: 46%;
+}
+
+.skeleton-rating {
+  height: 0.9rem;
+  width: 38%;
+}
+
+.skeleton-button {
+  height: 2.2rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .visually-hidden {

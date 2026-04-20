@@ -1,32 +1,88 @@
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {
+  type MonoTypeOperatorFunction,
+  Observable,
+  catchError,
+  throwError,
+} from 'rxjs';
+import type { LoginTokenResponse } from '../models/auth-response';
+import type { BookingDto } from '../models/booking.dto';
+import type { LoginRequest } from '../models/login-request';
+import type { Subject } from '../models/subject';
+import type { TutorProfileDto } from '../models/tutor-profile.dto';
 
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  /** Django dev server: python manage.py runserver → http://127.0.0.1:8000 */
-  private baseUrl = 'http://127.0.0.1:8000/api';
+  
+  readonly apiUrl = 'http://127.0.0.1:8000/api';
+
   constructor(private http: HttpClient) {}
 
-  getSubjects(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/subjects/`);
+  private url(path: string): string {
+    const p = path.startsWith('/') ? path : `/${path}`;
+    return `${this.apiUrl}${p}`;
   }
 
-  login(credentials: any): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/auth/login/`, credentials);
-  }
-
-  getTutor(id: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/tutors/profile/${id}/`);
-  }
-
-  /** Backend expects `lesson_slot` = LessonSlot id, not tutor profile id. */
-  createBooking(lessonSlotId: number): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/bookings/`, {
-      lesson_slot: lessonSlotId,
+  private logAndRethrow<T>(context: string): MonoTypeOperatorFunction<T> {
+    return catchError((err: unknown) => {
+      if (err instanceof HttpErrorResponse) {
+        console.error(
+          `[ApiService:${context}] HTTP ${err.status ?? '?'} — ${err.statusText || 'error'}`,
+          err.url ?? this.apiUrl,
+          err.error,
+        );
+      } else {
+        console.error(
+          `[ApiService:${context}] Backend unreachable or network error`,
+          err,
+        );
+      }
+      return throwError(() => err);
     });
+  }
+
+
+  getSubjects(): Observable<Subject[]> {
+    return this.http
+      .get<Subject[]>(this.url('/subjects/'))
+      .pipe(this.logAndRethrow<Subject[]>('getSubjects'));
+  }
+
+
+  getTutors(params?: { subject?: string }): Observable<TutorProfileDto[]> {
+    let httpParams = new HttpParams();
+    if (params?.subject) {
+      httpParams = httpParams.set('subject', params.subject);
+    }
+    return this.http
+      .get<TutorProfileDto[]>(this.url('/tutors/'), { params: httpParams })
+      .pipe(this.logAndRethrow<TutorProfileDto[]>('getTutors'));
+  }
+
+  
+  login(credentials: LoginRequest): Observable<LoginTokenResponse> {
+    return this.http
+      .post<LoginTokenResponse>(this.url('/auth/login/'), credentials)
+      .pipe(this.logAndRethrow<LoginTokenResponse>('login'));
+  }
+
+
+  getTutorProfile(id: number): Observable<TutorProfileDto> {
+    return this.http
+      .get<TutorProfileDto>(this.url(`/tutors/profile/${id}/`))
+      .pipe(this.logAndRethrow<TutorProfileDto>('getTutorProfile'));
+  }
+
+
+  createBooking(lessonSlotId: number): Observable<BookingDto> {
+    return this.http
+      .post<BookingDto>(this.url('/bookings/'), {
+        lesson_slot: lessonSlotId,
+      })
+      .pipe(this.logAndRethrow<BookingDto>('createBooking'));
   }
 }

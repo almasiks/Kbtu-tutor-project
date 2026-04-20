@@ -3,6 +3,7 @@ export interface Tutor {
   name: string;
   subject: string;
   rating: number;
+  isAvailable?: boolean;
 }
 
 export interface TutorDetail extends Tutor {

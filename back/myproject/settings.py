@@ -82,6 +82,7 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Angular dev server (ng serve). CorsMiddleware must stay first in MIDDLEWARE.
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'http://127.0.0.1:4200',

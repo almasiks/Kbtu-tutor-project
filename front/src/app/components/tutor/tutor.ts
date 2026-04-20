@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api';
 import type { TutorDetail } from '../../models/tutor';
+import type { TutorProfileDto } from '../../models/tutor-profile.dto';
 
 @Component({
   selector: 'app-tutor-detail',
@@ -28,9 +29,9 @@ export class TutorDetailComponent implements OnInit {
       this.errorMessage = 'Invalid tutor id.';
       return;
     }
-    this.api.getTutor(numId).subscribe({
-      next: (t) => {
-        this.tutor = t;
+    this.api.getTutorProfile(numId).subscribe({
+      next: (dto) => {
+        this.tutor = this.mapProfileToDetail(dto);
         this.loading = false;
       },
       error: () => {
@@ -40,11 +41,24 @@ export class TutorDetailComponent implements OnInit {
     });
   }
 
+  private mapProfileToDetail(d: TutorProfileDto): TutorDetail {
+    return {
+      id: d.id,
+      name: d.user?.username ?? '—',
+      subject: d.subject?.name ?? 'Без предмета',
+      rating: Number(d.rating) || 0,
+      bio: d.bio || undefined,
+      price: Number(d.hourly_rate) || 0,
+      experience: d.experience_years,
+      image: null,
+    };
+  }
+
   bookLesson(): void {
     if (!this.tutor) {
       return;
     }
     this.errorMessage =
-      'Booking needs a free lesson slot id (POST /api/bookings/ with lesson_slot). Add slot listing or pick a slot in the UI.';
+      'Бронирование: нужен свободный слот (POST /api/bookings/ с полем lesson_slot). Добавьте выбор слота в UI.';
   }
 }
