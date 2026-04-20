@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Subject, TutorProfile, LessonSlot, Booking
 from .serializers import (
@@ -17,22 +18,17 @@ from .serializers import (
 User = get_user_model()
 
 
-def _user_payload(user, token):
-    return {
-        'token': token.key,
-        'user_id': user.id,
-        'username': user.username,
-        'is_staff': user.is_staff,
-        'is_tutor': getattr(user, 'is_tutor', False),
-    }
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def api_root(_request):
     return Response({
         'auth': {
             'register': '/api/auth/register/',
             'login': '/api/auth/login/',
             'logout': '/api/auth/logout/',
+            'profile': '/api/auth/profile/',
         },
         'tutors': '/api/tutors/',
         'tutor_profile': '/api/tutors/profile/',
@@ -46,13 +42,26 @@ def api_root(_request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    if request.data.get('is_tutor') and not (request.user.is_authenticated and request.user.is_staff):
-        return Response({'detail': 'Only admins can register tutor accounts.'}, status=status.HTTP_403_FORBIDDEN)
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
-    token, _ = Token.objects.get_or_create(user=user)
-    return Response(_user_payload(user, token), status=status.HTTP_201_CREATED)
+
+    refresh = RefreshToken.for_user(user)
+
+    return Response(
+        {
+            'message': 'User registered successfully',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role,
+            }
+        },
+        status=status.HTTP_201_CREATED
+    )
 
 
 @api_view(['POST'])
@@ -60,19 +69,39 @@ def register(request):
 def login(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = serializer.validated_data['user']
-    token, _ = Token.objects.get_or_create(user=user)
-    return Response(_user_payload(user, token))
+
+    username = serializer.validated_data['username']
+    password = serializer.validated_data['password']
+
+    user = authenticate(username=username, password=password)
+
+    if user is None:
+        return Response(
+            {'detail': 'Invalid credentials'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    refresh = RefreshToken.for_user(user)
+
+    return Response(
+        {
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role,
+            }
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    try:
-        request.user.auth_token.delete()
-    except Exception:
-        pass
-    return Response({'detail': 'Logged out.'})
+    return Response({'detail': 'Logged out.'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -84,6 +113,17 @@ def tutor_list(request):
         qs = qs.filter(subject_id=subject_id)
     return Response(TutorProfileSerializer(qs, many=True).data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    user = request.user
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'role': user.role,
+    }, status=status.HTTP_200_OK
+)
 
 class TutorProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -284,7 +324,7 @@ class UserAdminView(APIView):
                 'id': u.id,
                 'username': u.username,
                 'email': u.email,
-                'is_tutor': getattr(u, 'is_tutor', False),
+                'role': u.role,
                 'is_staff': u.is_staff,
                 'is_active': u.is_active,
             }
@@ -292,17 +332,19 @@ class UserAdminView(APIView):
         ]
         return Response(data)
 
-    def patch(self, request, pk):
-        err = self._require_admin(request)
-        if err:
-            return err
-        user = get_object_or_404(User, pk=pk)
-        if 'is_tutor' in request.data:
-            user.is_tutor = bool(request.data['is_tutor'])
-            user.save(update_fields=['is_tutor'])
-        return Response({
-            'id': user.id,
-            'username': user.username,
-            'is_tutor': getattr(user, 'is_tutor', False),
-            'is_staff': user.is_staff,
-        })
+def patch(self, request, pk):
+    err = self._require_admin(request)
+    if err:
+        return err
+    user = get_object_or_404(User, pk=pk)
+
+    if 'role' in request.data and request.data['role'] in ['student', 'tutor', 'admin']:
+        user.role = request.data['role']
+        user.save(update_fields=['role'])
+
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'role': user.role,
+        'is_staff': user.is_staff,
+    })

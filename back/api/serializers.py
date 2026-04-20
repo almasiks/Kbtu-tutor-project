@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=6)
-    is_tutor = serializers.BooleanField(default=False)
+    role = serializers.ChoiceField(choices=['student', 'tutor'])
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
@@ -17,14 +17,13 @@ class RegisterSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        is_tutor = validated_data.pop('is_tutor', False)
+        role = validated_data.pop('role', 'student')
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
+            role=role,
         )
-        user.is_tutor = is_tutor
-        user.save()
         return user
 
 
