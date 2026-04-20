@@ -1,5 +1,5 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 
 
 class ActiveTutorManager(models.Manager):
@@ -25,7 +25,7 @@ class TutorProfile(models.Model):
     objects = models.Manager()
     active = ActiveTutorManager()
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='tutor_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tutor_profile')
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, related_name='tutors')
     experience_years = models.PositiveIntegerField(default=0)
     bio = models.TextField(blank=True)
@@ -57,7 +57,7 @@ class Booking(models.Model):
         ('Completed', 'Completed'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     lesson_slot = models.OneToOneField(LessonSlot, on_delete=models.CASCADE, related_name='booking')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Confirmed')

@@ -1,1 +1,228 @@
-<p>profile works !</p>
+<div class="profile-page">
+  <div class="profile-inner">
+
+    @if (loading) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Загрузка профиля…</p>
+      </div>
+
+    } @else if (error) {
+      <div class="error-state"><p class="error-msg">{{ error }}</p></div>
+
+    } @else if (storedUser?.is_staff && !storedUser?.is_tutor) {
+      <!-- ── Admin ── -->
+      <div class="profile-hero">
+        <div class="avatar-lg">{{ storedUser?.username?.charAt(0)?.toUpperCase() }}</div>
+        <div class="profile-hero-info">
+          <h1 class="profile-name">{{ storedUser?.username }}</h1>
+          <div class="profile-tags"><span class="tag tag-admin">Администратор</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h2 class="card-title">Панель управления</h2>
+        <p class="card-bio">Вы вошли как администратор. Используйте <strong>Админ-панель</strong> для управления пользователями и предметами.</p>
+      </div>
+
+    } @else if (storedUser?.is_tutor) {
+      <!-- ── Tutor ── -->
+      @if (profile) {
+
+        <!-- Hero -->
+        <div class="profile-hero">
+          <div class="avatar-lg">{{ profile.user.username.charAt(0).toUpperCase() }}</div>
+          <div class="profile-hero-info">
+            <h1 class="profile-name">{{ profile.user.username }}</h1>
+            <p class="profile-email">{{ profile.user.email }}</p>
+            <div class="profile-tags">
+              @if (storedUser?.is_staff) { <span class="tag tag-admin">Администратор</span> }
+              <span class="tag tag-tutor">Тьютор</span>
+              @if (profile.subject) { <span class="tag tag-subject">{{ profile.subject.name }}</span> }
+            </div>
+          </div>
+          @if (!editing) {
+            <button class="btn-edit" (click)="startEdit()">Редактировать</button>
+          }
+        </div>
+
+        <!-- VIEW mode -->
+        @if (!editing) {
+          <div class="cards-row">
+            <div class="info-card">
+              <h2 class="card-title">О себе</h2>
+              <p class="card-bio">{{ profile.bio || 'Описание не заполнено.' }}</p>
+            </div>
+            <div class="stats-card">
+              <div class="stat">
+                <span class="stat-value">{{ profile.experience_years }}</span>
+                <span class="stat-label">лет опыта</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">{{ profile.hourly_rate }}</span>
+                <span class="stat-label">KZT/час</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">{{ profile.rating }}</span>
+                <span class="stat-label">рейтинг</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- EDIT mode -->
+        @if (editing) {
+          <div class="edit-card">
+            <div class="edit-card-head">
+              <h2 class="card-title">Редактировать профиль</h2>
+            </div>
+            @if (saveError) {
+              <div class="save-error">{{ saveError }}</div>
+            }
+            <form class="edit-form" (ngSubmit)="saveEdit()">
+              <div class="edit-grid">
+                <label class="field">
+                  <span class="field-label">Предмет</span>
+                  <select class="field-input field-select" [(ngModel)]="form.subject_id" name="subject_id">
+                    <option [ngValue]="null">— Не выбрано —</option>
+                    @for (s of subjects; track s.id) {
+                      <option [ngValue]="s.id">{{ s.name }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Опыт (лет)</span>
+                  <input class="field-input" type="number" min="0" max="50" [(ngModel)]="form.experience_years" name="experience_years" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Ставка (KZT/час)</span>
+                  <input class="field-input" type="number" min="0" [(ngModel)]="form.hourly_rate" name="hourly_rate" />
+                </label>
+                <label class="field field-full">
+                  <span class="field-label">О себе</span>
+                  <textarea class="field-input field-textarea" rows="4" [(ngModel)]="form.bio" name="bio" placeholder="Расскажите о себе…"></textarea>
+                </label>
+              </div>
+              <div class="edit-actions">
+                <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Сохранение…' : 'Сохранить' }}</button>
+                <button type="button" class="btn btn-ghost" (click)="cancelEdit()" [disabled]="saving">Отмена</button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- ── Slots section ── -->
+        <div class="slots-section">
+          <div class="slots-section-head">
+            <h2 class="section-title">Мои слоты</h2>
+            <span class="slots-count">{{ slots.length }} слот(ов)</span>
+          </div>
+
+          <!-- Create slot form -->
+          <div class="slot-add-card">
+            <h3 class="slot-add-title">+ Новый слот</h3>
+            @if (slotError) {
+              <div class="slot-error">{{ slotError }}</div>
+            }
+            <div class="slot-add-row">
+              <label class="field">
+                <span class="field-label">Начало</span>
+                <input class="field-input" type="datetime-local" [(ngModel)]="slotStart" name="slotStart" />
+              </label>
+              <label class="field">
+                <span class="field-label">Конец</span>
+                <input class="field-input" type="datetime-local" [(ngModel)]="slotEnd" name="slotEnd" />
+              </label>
+              <button class="btn btn-primary slot-add-btn" [disabled]="addingSlot || !slotStart || !slotEnd" (click)="addSlot()">
+                {{ addingSlot ? 'Создание…' : 'Добавить' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Slots list -->
+          @if (slotsLoading) {
+            <div class="slots-loading"><span class="spinner-sm"></span> Загрузка слотов…</div>
+          } @else if (slots.length === 0) {
+            <p class="slots-empty">Слотов пока нет. Создайте первый!</p>
+          } @else {
+            <div class="slots-list">
+              @for (slot of slots; track slot.id) {
+                <div class="slot-item" [class.slot-booked]="slot.is_booked">
+                  <div class="slot-times">
+                    <span class="slot-date">{{ slot.start_time | date:'d MMM yyyy' }}</span>
+                    <span class="slot-time-range">
+                      {{ slot.start_time | date:'HH:mm' }} — {{ slot.end_time | date:'HH:mm' }}
+                    </span>
+                  </div>
+                  <div class="slot-right">
+                    <span class="slot-badge" [class.badge-booked]="slot.is_booked" [class.badge-free]="!slot.is_booked">
+                      {{ slotStatusLabel(slot) }}
+                    </span>
+                    @if (!slot.is_booked) {
+                      <button class="btn-delete-slot" [disabled]="deletingSlotId === slot.id" (click)="deleteSlot(slot)">
+                        {{ deletingSlotId === slot.id ? '…' : '✕' }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      } @else {
+        <div class="no-profile-card">
+          <div class="no-profile-icon">📋</div>
+          <h2>Профиль тьютора не создан</h2>
+          <p>Ваш аккаунт имеет роль тьютора, но профиль ещё не заполнен.</p>
+        </div>
+      }
+
+    } @else {
+      <!-- ── Student ── -->
+      <div class="profile-hero">
+        <div class="avatar-lg">{{ storedUser?.username?.charAt(0)?.toUpperCase() }}</div>
+        <div class="profile-hero-info">
+          <h1 class="profile-name">{{ storedUser?.username }}</h1>
+          <div class="profile-tags"><span class="tag tag-student">Студент</span></div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h2 class="card-title">Мои бронирования</h2>
+        @if (bookings.length === 0) {
+          <p class="empty-msg">У вас пока нет бронирований. Найдите тьютора на <a class="link-home" routerLink="/">главной странице</a>.</p>
+        } @else {
+          <div class="bookings-list">
+            @for (b of bookings; track b.id) {
+              <div class="booking-item">
+                <div class="booking-item-left">
+                  <div class="booking-date-block">
+                    <span class="booking-day">{{ b.lesson_slot_detail?.start_time | date:'d' }}</span>
+                    <span class="booking-month">{{ b.lesson_slot_detail?.start_time | date:'MMM' }}</span>
+                  </div>
+                  <div class="booking-info">
+                    <span class="booking-tutor">{{ b.lesson_slot_detail?.tutor_username ?? 'Тьютор' }}</span>
+                    @if (b.lesson_slot_detail?.tutor_subject) {
+                      <span class="booking-subject">{{ b.lesson_slot_detail.tutor_subject }}</span>
+                    }
+                    <span class="booking-time">
+                      {{ b.lesson_slot_detail?.start_time | date:'HH:mm' }} — {{ b.lesson_slot_detail?.end_time | date:'HH:mm' }}
+                      &nbsp;·&nbsp; {{ b.lesson_slot_detail?.start_time | date:'d MMM yyyy' }}
+                    </span>
+                    @if (b.lesson_slot_detail?.tutor_hourly_rate) {
+                      <span class="booking-price">{{ b.lesson_slot_detail.tutor_hourly_rate }} KZT/час</span>
+                    }
+                  </div>
+                </div>
+                <span class="booking-status" [class]="statusClass(b.status)">{{ statusLabel(b.status) }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>

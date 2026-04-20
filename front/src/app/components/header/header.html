@@ -1,0 +1,48 @@
+<header class="header">
+  <div class="header-inner">
+
+    <a class="logo" routerLink="/" (click)="closeMenu()">
+      <span class="logo-icon">K</span>
+      <span class="logo-text">KBTU <strong>Tutor</strong></span>
+    </a>
+
+    <nav class="nav" [class.open]="menuOpen">
+      <a class="nav-link" routerLink="/" routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+        Главная
+      </a>
+      @if (user?.is_staff) {
+        <a class="nav-link" routerLink="/admin-panel" routerLinkActive="active" (click)="closeMenu()">
+          Админ
+        </a>
+      }
+      @if (user?.is_tutor || user?.is_staff) {
+        <a class="nav-link" routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">
+          Мой профиль
+        </a>
+      }
+    </nav>
+
+    <div class="header-actions">
+      @if (user) {
+        <span class="user-badge">
+          <span class="user-avatar">{{ user.username.charAt(0).toUpperCase() }}</span>
+          <span class="user-name">{{ user.username }}</span>
+          @if (user.is_staff) {
+            <span class="role-tag staff">Админ</span>
+          } @else if (user.is_tutor) {
+            <span class="role-tag tutor">Тьютор</span>
+          }
+        </span>
+        <button class="btn-logout" (click)="logout()">Выйти</button>
+      } @else {
+        <a class="btn-login" routerLink="/login">Войти</a>
+      }
+    </div>
+
+    <button class="burger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen">
+      <span></span><span></span><span></span>
+    </button>
+
+  </div>
+</header>

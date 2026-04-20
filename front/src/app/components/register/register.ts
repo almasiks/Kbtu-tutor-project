@@ -27,37 +27,30 @@ export class RegisterComponent {
   ) {}
 
   onSubmit(): void {
-    if (!this.username || !this.email || !this.password) return;
-
+    if (!this.username || !this.email || !this.password || !this.password2) {
+      return;
+    }
     if (this.password !== this.password2) {
       this.error = 'Пароли не совпадают.';
       this.cdr.markForCheck();
       return;
     }
 
-    if (this.password.length < 6) {
-      this.error = 'Пароль должен быть не менее 6 символов.';
-      this.cdr.markForCheck();
-      return;
-    }
-
     this.loading = true;
     this.error = null;
-
-    this.api.register({ username: this.username, email: this.email, password: this.password }).subscribe({
-      next: () => this.router.navigate(['/']),
-      error: (err: any) => {
-        this.loading = false;
-        const data = err?.error;
-        if (data?.username) {
-          this.error = 'Это имя пользователя уже занято.';
-        } else if (data?.email) {
-          this.error = 'Некорректный email.';
-        } else {
-          this.error = data?.detail ?? 'Ошибка при регистрации. Попробуйте ещё раз.';
-        }
-        this.cdr.markForCheck();
-      },
-    });
+    this.api
+      .register({
+        username: this.username,
+        email: this.email,
+        password: this.password,
+      })
+      .subscribe({
+        next: () => this.router.navigate(['/']),
+        error: (err) => {
+          this.loading = false;
+          this.error = err?.error?.detail ?? 'Не удалось зарегистрироваться.';
+          this.cdr.markForCheck();
+        },
+      });
   }
 }

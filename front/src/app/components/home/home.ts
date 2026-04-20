@@ -1,112 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api';
-import type { Tutor } from '../../models/tutor';
-import type { TutorProfileDto } from '../../models/tutor-profile.dto';
-import { finalize } from 'rxjs';
+
+export interface TutorRow {
+  id: number;
+  name: string;
+  subject: string;
+  rating: number;
+}
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class HomeComponent implements OnInit {
-
-  allTutors: Tutor[] = [];
-  listError: string | null = null;
-  listLoadedFromApi = false;
-  isLoading = false;
-
-  private readonly seedTutors: Tutor[] = [
-    {
-      id: 1,
-      name: 'John Doe',
-      subject: 'Mathematics',
-      rating: 4.5,
-      isAvailable: true,
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      subject: 'Physics',
-      rating: 4.0,
-      isAvailable: false,
-    },
-    {
-      id: 3,
-      name: 'Almas Magrupov',
-      subject: 'Chemistry',
-      rating: 4.2,
-      isAvailable: true,
-    },
-    {
-      id: 4,
-      name: 'Michael Brown',
-      subject: 'Biology',
-      rating: 4.7,
-      isAvailable: true,
-    },
-    {
-      id: 5,
-      name: 'Alikhan Turugeldiev',
-      subject: 'English',
-      rating: 4.3,
-      isAvailable: false,
-    },
-    {
-      id: 6,
-      name: 'Yertayev Daniyal',
-      subject: 'History',
-      rating: 4.1,
-      isAvailable: true,
-    },
+export class HomeComponent {
+  /** Full list (source of truth for filtering). */
+  readonly allTutors: TutorRow[] = [
+    { id: 1, name: 'John Doe', subject: 'Mathematics', rating: 4.5 },
+    { id: 2, name: 'Jane Smith', subject: 'Physics', rating: 4.0 },
+    { id: 3, name: 'Almas Magrupov', subject: 'Chemistry', rating: 4.2 },
+    { id: 4, name: 'Michael Brown', subject: 'Biology', rating: 4.7 },
+    { id: 5, name: 'Alikhan Turugeldiev', subject: 'English', rating: 4.3 },
+    { id: 6, name: 'Yertayev Daniyal', subject: 'History', rating: 4.1 },
   ];
 
+  /** Text: matches tutor name or subject (case-insensitive). */
   quickSearch = '';
   subjectFilter = '';
   minRating = 0;
-
-  constructor(private api: ApiService) {}
-
-  ngOnInit(): void {
-    this.loadTutorsFromApi();
-  }
-
-  private loadTutorsFromApi(): void {
-    this.isLoading = true;
-    this.api
-      .getTutors()
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        }),
-      )
-      .subscribe({
-        next: (profiles) => {
-          this.listError = null;
-          this.listLoadedFromApi = true;
-          this.allTutors = profiles.map((p) => this.mapProfileToTutor(p));
-        },
-        error: () => {
-          this.listError =
-            'Не удалось загрузить список с сервера. Показаны демо-данные (проверьте, что Django запущен на порту 8000).';
-          this.allTutors = [...this.seedTutors];
-          this.listLoadedFromApi = false;
-        },
-      });
-  }
-
-  private mapProfileToTutor(p: TutorProfileDto): Tutor {
-    return {
-      id: p.id,
-      name: p.user?.username ?? '—',
-      subject: p.subject?.name ?? 'Без предмета',
-      rating: Number(p.rating) || 0,
-      isAvailable: p.is_available ?? (p.id % 2 === 0 ? false : true),
-    };
-  }
 
   get subjectOptions(): string[] {
     return [...new Set(this.allTutors.map((t) => t.subject))].sort((a, b) =>
@@ -126,16 +50,10 @@ export class HomeComponent implements OnInit {
       if (q) {
         const inName = t.name.toLowerCase().includes(q);
         const inSubject = t.subject.toLowerCase().includes(q);
-        if (!inName && !inSubject) {
-          return false;
-        }
+        if (!inName && !inSubject) return false;
       }
-      if (this.subjectFilter && t.subject !== this.subjectFilter) {
-        return false;
-      }
-      if (t.rating < min) {
-        return false;
-      }
+      if (this.subjectFilter && t.subject !== this.subjectFilter) return false;
+      if (t.rating < min) return false;
       return true;
     });
   }
@@ -169,7 +87,7 @@ export class HomeComponent implements OnInit {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  selectTutor(tutor: Tutor): void {
+  selectTutor(tutor: TutorRow): void {
     window.alert(
       `Вы выбрали ${tutor.name} — ${tutor.subject}, рейтинг ${tutor.rating}`,
     );

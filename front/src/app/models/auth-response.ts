@@ -1,12 +1,9 @@
-export interface AuthUser {
-  id: number;
-  username: string;
-  email?: string;
-}
-
 export interface AuthResponse {
   token: string;
-  user: AuthUser;
+  user_id: number;
+  username: string;
+  is_staff: boolean;
+  is_tutor: boolean;
 }
 
 

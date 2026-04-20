@@ -1,113 +1,209 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { take } from 'rxjs';
 import { ApiService } from '../../services/api';
 import type { StoredUser } from '../../auth/auth-storage';
 import type { BookingDto, LessonSlotInBookingDto } from '../../models/booking.dto';
-import type { TutorProfileDto } from '../../models/tutor-profile.dto';
+import type { TutorProfile } from '../../models/tutor';
+import type { Subject } from '../../models/subject';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
 export class ProfileComponent implements OnInit {
+  storedUser: StoredUser | null = null;
+  profile: TutorProfile | null = null;
+  subjects: Subject[] = [];
+  bookings: BookingDto[] = [];
+
   loading = true;
   error: string | null = null;
-  storedUser: StoredUser | null = null;
-  profile: TutorProfileDto | null = null;
 
-  slotsLoading = false;
+  editing = false;
+  saving = false;
+  saveError: string | null = null;
+  form = { bio: '', experience_years: 0, hourly_rate: 0, subject_id: null as number | null };
+
   slots: LessonSlotInBookingDto[] = [];
-  bookings: BookingDto[] = [];
+  slotsLoading = false;
+  slotStart = '';
+  slotEnd = '';
+  addingSlot = false;
+  slotError: string | null = null;
   deletingSlotId: number | null = null;
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
-    this.storedUser = this.api.getUser();
-    this.loadData();
+    this.api.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.storedUser = user;
+      if (!user) {
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      if (user.is_tutor) {
+        this.api.getSubjects().subscribe({
+          next: (s) => {
+            this.subjects = s;
+            this.cdr.markForCheck();
+          },
+          error: () => {},
+        });
+        this.api.getMyProfile().subscribe({
+          next: (p) => {
+            this.profile = p;
+            this.loading = false;
+            this.cdr.markForCheck();
+            this.loadSlots();
+          },
+          error: (err) => {
+            this.loading = false;
+            this.error = err.status === 404 ? null : 'Не удалось загрузить профиль.';
+            this.cdr.markForCheck();
+          },
+        });
+      } else {
+        this.loading = false;
+        this.cdr.markForCheck();
+        this.api.getMyBookings().subscribe({
+          next: (b) => {
+            this.bookings = b;
+            this.cdr.markForCheck();
+          },
+          error: () => {},
+        });
+      }
+    });
   }
 
-  private loadData(): void {
-    this.loading = true;
-    this.error = null;
-    if (this.storedUser?.is_tutor) {
-      this.api.getMyTutorProfile().subscribe({
-        next: (profile) => {
-          this.profile = profile;
-          this.loading = false;
+  startEdit(): void {
+    if (!this.profile) return;
+    this.form = {
+      bio: this.profile.bio ?? '',
+      experience_years: this.profile.experience_years ?? 0,
+      hourly_rate: Number(this.profile.hourly_rate) || 0,
+      subject_id: this.profile.subject?.id ?? null,
+    };
+    this.saveError = null;
+    this.editing = true;
+  }
+
+  cancelEdit(): void {
+    this.editing = false;
+    this.saveError = null;
+  }
+
+  saveEdit(): void {
+    this.saving = true;
+    this.saveError = null;
+    this.api
+      .patchMyProfile({
+        bio: this.form.bio,
+        experience_years: Number(this.form.experience_years),
+        hourly_rate: Number(this.form.hourly_rate),
+        subject_id: this.form.subject_id,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.profile = updated;
+          this.editing = false;
+          this.saving = false;
+          this.cdr.markForCheck();
         },
         error: () => {
-          this.error = 'Не удалось загрузить профиль.';
-          this.loading = false;
+          this.saveError = 'Не удалось сохранить изменения.';
+          this.saving = false;
+          this.cdr.markForCheck();
         },
       });
-      this.loadMySlots();
-    } else {
-      this.loading = false;
-      this.loadMyBookings();
-    }
   }
 
-  private loadMySlots(): void {
+  loadSlots(): void {
     this.slotsLoading = true;
     this.api.getMySlots().subscribe({
-      next: (slots) => {
-        this.slots = slots;
+      next: (s) => {
+        this.slots = s;
         this.slotsLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.slotsLoading = false;
+        this.cdr.markForCheck();
       },
     });
   }
 
-  private loadMyBookings(): void {
-    this.api.getMyBookings().subscribe({
-      next: (bookings) => {
-        this.bookings = bookings;
-      },
-      error: () => {
-        this.bookings = [];
-      },
-    });
-  }
-
-  slotStatusLabel(slot: LessonSlotInBookingDto): string {
-    return slot.is_booked ? 'Занят' : 'Свободен';
+  addSlot(): void {
+    if (!this.slotStart || !this.slotEnd) return;
+    this.slotError = null;
+    this.addingSlot = true;
+    this.api
+      .createSlot({
+        start_time: this.slotStart,
+        end_time: this.slotEnd,
+      })
+      .subscribe({
+        next: (slot) => {
+          this.slots = [...this.slots, slot];
+          this.slotStart = '';
+          this.slotEnd = '';
+          this.addingSlot = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.slotError =
+            err?.error?.non_field_errors?.[0] ??
+            err?.error?.detail ??
+            'Ошибка при создании слота.';
+          this.addingSlot = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   deleteSlot(slot: LessonSlotInBookingDto): void {
-    if (slot.is_booked) {
-      return;
-    }
+    if (slot.is_booked) return;
     this.deletingSlotId = slot.id;
     this.api.deleteSlot(slot.id).subscribe({
       next: () => {
         this.slots = this.slots.filter((s) => s.id !== slot.id);
         this.deletingSlotId = null;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.deletingSlotId = null;
+        this.cdr.markForCheck();
       },
     });
   }
 
-  statusClass(status: string): string {
-    const key = status.toLowerCase();
-    if (key === 'cancelled') return 'booking-status status-cancelled';
-    if (key === 'completed') return 'booking-status status-completed';
-    if (key === 'confirmed') return 'booking-status status-confirmed';
-    return 'booking-status status-pending';
+  slotStatusLabel(slot: LessonSlotInBookingDto): string {
+    return slot.is_booked ? 'Забронирован' : 'Свободен';
   }
 
-  statusLabel(status: string): string {
-    const key = status.toLowerCase();
-    if (key === 'cancelled') return 'Отменено';
-    if (key === 'completed') return 'Завершено';
-    if (key === 'confirmed') return 'Подтверждено';
-    return 'В ожидании';
+  statusClass(s: string): string {
+    if (s === 'Confirmed') return 'status-confirmed';
+    if (s === 'Cancelled') return 'status-cancelled';
+    if (s === 'Completed') return 'status-completed';
+    return '';
+  }
+
+  statusLabel(s: string): string {
+    if (s === 'Confirmed') return 'Подтверждено';
+    if (s === 'Cancelled') return 'Отменено';
+    if (s === 'Completed') return 'Завершено';
+    return s;
   }
 }
