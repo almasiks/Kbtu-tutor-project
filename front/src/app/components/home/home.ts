@@ -76,17 +76,11 @@ export class HomeComponent implements OnInit {
 
   private loadTutorsFromApi(): void {
     this.isLoading = true;
-
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'174c49'},body:JSON.stringify({sessionId:'174c49',runId:'pre-fix',hypothesisId:'H1',location:'home.ts:loadTutorsFromApi:start',message:'Started tutors loading',data:{quickSearch:this.quickSearch,subjectFilter:this.subjectFilter,minRating:this.minRating},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     this.api
       .getTutors()
       .pipe(
         finalize(() => {
           this.isLoading = false;
-
-          fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'174c49'},body:JSON.stringify({sessionId:'174c49',runId:'pre-fix',hypothesisId:'H1',location:'home.ts:loadTutorsFromApi:finalize',message:'Finished tutors loading',data:{isLoading:this.isLoading,totalTutors:this.allTutors.length},timestamp:Date.now()})}).catch(()=>{});
-
         }),
       )
       .subscribe({
@@ -94,18 +88,12 @@ export class HomeComponent implements OnInit {
           this.listError = null;
           this.listLoadedFromApi = true;
           this.allTutors = profiles.map((p) => this.mapProfileToTutor(p));
-
-          fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'174c49'},body:JSON.stringify({sessionId:'174c49',runId:'pre-fix',hypothesisId:'H2',location:'home.ts:loadTutorsFromApi:next',message:'Tutors loaded from API',data:{profilesCount:profiles.length,mappedCount:this.allTutors.length},timestamp:Date.now()})}).catch(()=>{});
-
         },
         error: () => {
           this.listError =
             'Не удалось загрузить список с сервера. Показаны демо-данные (проверьте, что Django запущен на порту 8000).';
           this.allTutors = [...this.seedTutors];
           this.listLoadedFromApi = false;
-
-          fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'174c49'},body:JSON.stringify({sessionId:'174c49',runId:'pre-fix',hypothesisId:'H2',location:'home.ts:loadTutorsFromApi:error',message:'Tutors API failed, fallback used',data:{fallbackCount:this.allTutors.length},timestamp:Date.now()})}).catch(()=>{});
-
         },
       });
   }
@@ -172,10 +160,7 @@ export class HomeComponent implements OnInit {
   }
 
   onMinRatingChange(value: number | string): void {
-    const numericValue = Number(value);
-
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'174c49'},body:JSON.stringify({sessionId:'174c49',runId:'pre-fix',hypothesisId:'H3',location:'home.ts:onMinRatingChange',message:'Min rating changed',data:{rawValue:value,numericValue,filteredCount:this.filteredTutors.length,totalTutors:this.allTutors.length},timestamp:Date.now()})}).catch(()=>{});
-
+    this.minRating = Number(value);
   }
 
   onSearch(): void {
