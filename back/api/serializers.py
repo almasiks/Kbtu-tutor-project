@@ -87,8 +87,9 @@ class BookingSerializer(serializers.ModelSerializer):
     student_username = serializers.CharField(source='student.username', read_only=True)
     tutor_name = serializers.CharField(source='tutor.user.username', read_only=True)
     tutor_subject = serializers.CharField(source='tutor.subject.name', read_only=True, default='')
+    tutor_hourly_rate = serializers.DecimalField(source='tutor.hourly_rate', max_digits=8, decimal_places=2, read_only=True)
 
     class Meta:
         model = Booking
-        fields = ['id', 'tutor', 'tutor_name', 'tutor_subject', 'student', 'student_username', 'date', 'status']
+        fields = ['id', 'tutor', 'tutor_name', 'tutor_subject', 'tutor_hourly_rate', 'student', 'student_username', 'date', 'status']
         read_only_fields = ['student']

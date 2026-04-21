@@ -30,6 +30,12 @@
   color: #333333;
   text-decoration: none;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .auth-btn {
@@ -41,6 +47,20 @@
   padding: 0 18px;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.auth-btn:hover {
+  background: #e8f0fb;
+}
+
+.auth-btn--primary {
+  background: #0056b3;
+  color: #ffffff;
+}
+
+.auth-btn--primary:hover {
+  background: #00489a;
 }
 
 @media (max-width: 760px) {

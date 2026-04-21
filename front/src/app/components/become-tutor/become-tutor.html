@@ -1,0 +1,93 @@
+<section class="page">
+  <app-header></app-header>
+
+  <div class="wrap">
+    <nav class="breadcrumbs">
+      <a routerLink="/">Главная</a>
+      <span class="sep">›</span>
+      <span class="current">Стать тьютором</span>
+    </nav>
+
+    <div class="card">
+      <h1>Стать тьютором</h1>
+      <p class="subtitle">Заполни анкету — и студенты смогут найти тебя на платформе</p>
+
+      @if (submitSuccess) {
+        <div class="alert alert-success">
+          ✅ Профиль успешно сохранён! Перенаправляем на страницу профиля...
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+          
+          <div class="field">
+            <label for="subject">Предмет <span class="req">*</span></label>
+            <select id="subject" formControlName="subject_id" [class.invalid]="f['subject_id'].invalid && f['subject_id'].touched">
+              <option [ngValue]="null" disabled>Выберите предмет</option>
+              @for (s of subjects; track s.id) {
+                <option [ngValue]="s.id">{{ s.name }}</option>
+              }
+            </select>
+            @if (f['subject_id'].invalid && f['subject_id'].touched) {
+              <span class="err">Выберите предмет</span>
+            }
+          </div>
+
+
+          <div class="field">
+            <label for="exp">Опыт (лет) <span class="req">*</span></label>
+            <input id="exp" type="number" formControlName="experience_years" placeholder="Например: 2"
+              [class.invalid]="f['experience_years'].invalid && f['experience_years'].touched" />
+            @if (f['experience_years'].touched) {
+              @if (f['experience_years'].errors?.['required']) {
+                <span class="err">Укажите опыт</span>
+              } @else if (f['experience_years'].errors?.['min']) {
+                <span class="err">Опыт не может быть отрицательным</span>
+              } @else if (f['experience_years'].errors?.['max']) {
+                <span class="err">Максимум 10 лет</span>
+              }
+            }
+          </div>
+
+          
+          <div class="field">
+            <label for="bio">О себе <span class="req">*</span></label>
+            <textarea id="bio" formControlName="bio" rows="4" placeholder="Расскажи о своём опыте, подходе к обучению..."
+              [class.invalid]="f['bio'].invalid && f['bio'].touched"></textarea>
+            @if (f['bio'].touched) {
+              @if (f['bio'].errors?.['required']) {
+                <span class="err">Заполните поле</span>
+              } @else if (f['bio'].errors?.['minlength']) {
+                <span class="err">Минимум 20 символов</span>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="rate">Почасовая ставка (₸/час) <span class="req">*</span></label>
+            <input id="rate" type="number" formControlName="hourly_rate" placeholder="Например: 2000"
+              [class.invalid]="f['hourly_rate'].invalid && f['hourly_rate'].touched" />
+            @if (f['hourly_rate'].touched) {
+              @if (f['hourly_rate'].errors?.['required']) {
+                <span class="err">Укажите ставку</span>
+              } @else if (f['hourly_rate'].errors?.['min']) {
+                <span class="err">Ставка должна быть больше 0</span>
+              }
+            }
+          </div>
+
+          @if (submitError) {
+            <div class="alert alert-error">{{ submitError }}</div>
+          }
+
+          <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Сохранение...' : 'Создать профиль тьютора' }}
+          </button>
+
+        </form>
+      }
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</section>

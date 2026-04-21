@@ -1,1 +1,58 @@
-<p>register works!</p>
+<div class="auth-page">
+  <div class="card">
+    <a routerLink="/" class="logo">KBTU TUTOR</a>
+    <h1>Регистрация</h1>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="field">
+        <label for="username">Логин</label>
+        <input id="username" type="text" formControlName="username" placeholder="Минимум 3 символа"
+          [class.invalid]="f['username'].invalid && f['username'].touched" />
+        @if (f['username'].touched) {
+          @if (f['username'].errors?.['required']) { <span class="err">Введите логин</span> }
+          @else if (f['username'].errors?.['minlength']) { <span class="err">Минимум 3 символа</span> }
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" placeholder="example@kbtu.kz"
+          [class.invalid]="f['email'].invalid && f['email'].touched" />
+        @if (f['email'].touched) {
+          @if (f['email'].errors?.['required']) { <span class="err">Введите email</span> }
+          @else if (f['email'].errors?.['email']) { <span class="err">Некорректный email</span> }
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Пароль</label>
+        <input id="password" type="password" formControlName="password" placeholder="Минимум 6 символов"
+          [class.invalid]="f['password'].invalid && f['password'].touched" />
+        @if (f['password'].touched) {
+          @if (f['password'].errors?.['required']) { <span class="err">Введите пароль</span> }
+          @else if (f['password'].errors?.['minlength']) { <span class="err">Минимум 6 символов</span> }
+        }
+      </div>
+
+      <div class="field">
+        <label>Я регистрируюсь как</label>
+        <div class="role-toggle">
+          <button type="button" [class.active]="f['role'].value === 'student'"
+            (click)="form.patchValue({ role: 'student' })">Студент</button>
+          <button type="button" [class.active]="f['role'].value === 'tutor'"
+            (click)="form.patchValue({ role: 'tutor' })">Тьютор</button>
+        </div>
+      </div>
+
+      @if (error) {
+        <div class="alert-error">{{ error }}</div>
+      }
+
+      <button type="submit" class="submit-btn" [disabled]="isLoading">
+        {{ isLoading ? 'Регистрация...' : 'Создать аккаунт' }}
+      </button>
+    </form>
+
+    <p class="switch">Уже есть аккаунт? <a routerLink="/login">Войти</a></p>
+  </div>
+</div>

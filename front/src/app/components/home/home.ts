@@ -1,8 +1,9 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, TutorDetail } from '../../services/api.service';
+import { AuthService } from '../../services/auth';
 import { HeaderComponent } from '../header/header';
 import { FooterComponent } from '../footer/footer';
 
@@ -21,12 +22,16 @@ interface SubjectItem {
 })
 export class Home implements OnInit {
   private readonly apiService = inject(ApiService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   tutors: TutorDetail[] = [];
   filteredTutors: TutorDetail[] = [];
   isLoading = false;
   ratingInProgress: number | null = null;
+  bookingInProgress: number | null = null;
+  toast: { message: string; success: boolean } | null = null;
 
   searchQuery = '';
   selectedSubject = '';
@@ -55,11 +60,15 @@ export class Home implements OnInit {
   ];
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const msg = window.history.state?.['toast'] as string | undefined;
+      if (msg) { this.showToast(msg, true); }
+    }
     this.refreshFromServer();
   }
 
   get isAuthenticated(): boolean {
-    return !!localStorage.getItem('access_token') || !!localStorage.getItem('token');
+    return this.authService.isAuthenticated();
   }
 
   applyFilter(): void {
@@ -96,6 +105,41 @@ export class Home implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  bookTutor(tutorId: number): void {
+    if (!this.isAuthenticated) {
+      this.showToast('Сначала войдите в систему', false);
+      setTimeout(() => this.router.navigate(['/login']), 1500);
+      return;
+    }
+    this.bookingInProgress = tutorId;
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const time = now.toTimeString().slice(0, 5);
+    this.apiService.createBooking({ tutor: tutorId, date: now.toISOString() }).subscribe({
+      next: () => {
+        this.bookingInProgress = null;
+        const msg = `Вы успешно забронировали занятие на ${date} в ${time}`;
+        this.showToast(msg, true);
+        setTimeout(() => this.router.navigate(['/profile'], { state: { toast: msg } }), 2500);
+      },
+      error: (err) => {
+        this.bookingInProgress = null;
+        const isSlotTaken = err?.status === 400;
+        this.showToast(
+          isSlotTaken
+            ? 'К сожалению, это время уже занято. Выберите другое'
+            : 'Ошибка при бронировании. Попробуйте ещё раз.',
+          false,
+        );
+      },
+    });
+  }
+
+  private showToast(message: string, success: boolean): void {
+    this.toast = { message, success };
+    setTimeout(() => (this.toast = null), 3000);
   }
 
   selectTutor(tutorId: number): void {

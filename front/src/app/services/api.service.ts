@@ -56,6 +56,7 @@ export interface BookingItem {
   tutor: number;
   tutor_name: string;
   tutor_subject: string;
+  tutor_hourly_rate: string;
   student: number;
   student_username: string;
   date: string;
@@ -64,8 +65,15 @@ export interface BookingItem {
 
 export interface BookingPayload {
   tutor: number;
-  date: string;
+  date: string; // ISO datetime string
   status?: 'pending' | 'confirmed' | 'cancelled';
+}
+
+export interface TutorProfilePayload {
+  subject_id: number;
+  experience_years: number;
+  bio: string;
+  hourly_rate: number;
 }
 
 @Injectable({
@@ -96,7 +104,7 @@ export class ApiService {
   }
 
   getMyBookings(): Observable<BookingItem[]> {
-    return this.http.get<BookingItem[]>(`${this.baseUrl}/bookings/`).pipe(timeout(4000));
+    return this.http.get<BookingItem[]>(`${this.baseUrl}/my-bookings/`).pipe(timeout(4000));
   }
 
   rateTutor(tutorId: number, score: number): Observable<{ rating: string }> {
@@ -109,5 +117,9 @@ export class ApiService {
 
   getTutorsBySubject(subjectId: string | number): Observable<TutorDetail[]> {
     return this.http.get<TutorDetail[]>(`${this.baseUrl}/tutors/?subject=${subjectId}`).pipe(timeout(4000));
+  }
+
+  createTutorProfile(payload: TutorProfilePayload): Observable<TutorDetail> {
+    return this.http.post<TutorDetail>(`${this.baseUrl}/tutors/create/`, payload).pipe(timeout(4000));
   }
 }

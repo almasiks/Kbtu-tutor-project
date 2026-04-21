@@ -3,10 +3,15 @@
     <a routerLink="/" class="logo">KBTU TUTOR</a>
     <nav class="nav">
       <a routerLink="/">Найти Тьютора</a>
-      <a routerLink="/profile">Стать Тьютором</a>
+      <a routerLink="/become-tutor">Стать Тьютором</a>
     </nav>
-    <button type="button" class="auth-btn" (click)="goToAuthOrProfile()">
-      {{ isLoggedIn ? 'Профиль' : 'Вход/Регистрация' }}
-    </button>
+    <div class="auth-actions">
+      @if (isLoggedIn) {
+        <button type="button" class="auth-btn auth-btn--primary" (click)="goToProfile()">Профиль</button>
+      } @else {
+        <button type="button" class="auth-btn" (click)="goToLogin()">Вход</button>
+        <button type="button" class="auth-btn auth-btn--primary" (click)="goToRegister()">Регистрация</button>
+      }
+    </div>
   </div>
 </header>

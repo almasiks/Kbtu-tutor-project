@@ -1,6 +1,12 @@
 <section class="page">
   <app-header></app-header>
 
+  @if (toast) {
+    <div class="toast" [class.toast-success]="toast.success" [class.toast-error]="!toast.success">
+      {{ toast.message }}
+    </div>
+  }
+
   <section class="hero">
     <div class="hero-inner">
       <h1>Нужен тьютор? Найди старшекурсника на KBTU Tutor!</h1>
@@ -49,7 +55,11 @@
             <span class="score">{{ tutor.rating }}</span>
           </div>
 
-          <button class="book-btn" type="button" [disabled]="ratingInProgress === tutor.id" (click)="selectTutor(tutor.id)">Забронировать</button>
+          <button class="book-btn" type="button"
+            [disabled]="bookingInProgress === tutor.id || ratingInProgress === tutor.id"
+            (click)="bookTutor(tutor.id)">
+            {{ bookingInProgress === tutor.id ? 'Бронирование...' : 'Забронировать' }}
+          </button>
         </article>
       }
     </section>

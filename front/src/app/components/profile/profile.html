@@ -1,18 +1,59 @@
-<section class="profile">
-  <h2>Личный кабинет</h2>
-  <h3>Мои бронирования</h3>
+<section class="page">
+  <app-header></app-header>
 
-  @if (bookings.length === 0) {
-    <p>Пока бронирований нет.</p>
-  } @else {
-    <ul class="bookings-list">
-      @for (booking of bookings; track booking.id) {
-        <li>
-          <strong>{{ booking.tutor_name }}</strong>
-          <span> — {{ booking.date | date: 'short' }}</span>
-          <span> ({{ booking.status }})</span>
-        </li>
-      }
-    </ul>
+  @if (toast) {
+    <div class="toast" [class.toast-success]="toast.success" [class.toast-error]="!toast.success">
+      {{ toast.message }}
+    </div>
   }
+
+  <div class="wrap">
+    <div class="page-header">
+      <h1>Личный кабинет</h1>
+      <button class="logout-btn" (click)="logout()">Выйти</button>
+    </div>
+
+    <section class="bookings-section">
+      <h2>Мои бронирования</h2>
+
+      @if (isLoading) {
+        <div class="skeleton-list">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="skeleton-card">
+              <div class="sk-line medium"></div>
+              <div class="sk-line short"></div>
+              <div class="sk-line long"></div>
+            </div>
+          }
+        </div>
+      } @else if (bookings.length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📅</span>
+          <p>У вас пока нет активных бронирований</p>
+          <a href="/" class="find-btn">Найти тьютора</a>
+        </div>
+      } @else {
+        <div class="bookings-grid">
+          @for (b of bookings; track b.id) {
+            <article class="booking-card">
+              <div class="booking-avatar">{{ b.tutor_name.charAt(0).toUpperCase() }}</div>
+              <div class="booking-info">
+                <h3>{{ b.tutor_name }}</h3>
+                <p class="subject">{{ b.tutor_subject || 'Предмет не указан' }}</p>
+                <p class="datetime">📅 {{ b.date | date: 'dd.MM.yyyy' }} &nbsp; 🕐 {{ b.date | date: 'HH:mm' }}</p>
+                @if (b.tutor_hourly_rate) {
+                  <p class="rate">{{ b.tutor_hourly_rate }} ₸/час</p>
+                }
+              </div>
+              <span class="status-badge" [class]="'status-' + b.status">
+                {{ statusLabels[b.status] ?? b.status }}
+              </span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <app-footer></app-footer>
 </section>

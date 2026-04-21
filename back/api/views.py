@@ -105,6 +105,13 @@ def logout(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_bookings(request):
+    bookings = Booking.objects.filter(student=request.user).select_related('tutor', 'tutor__user', 'tutor__subject')
+    return Response(BookingSerializer(bookings, many=True).data)
+
+
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def tutor_list(request):
     qs = TutorProfile.active.select_related('user', 'subject').all()
@@ -146,14 +153,12 @@ class TutorProfileView(APIView):
         return Response(TutorProfileSerializer(profile).data)
 
     def post(self, request):
-        if not (getattr(request.user, 'is_tutor', False) or request.user.is_staff):
-            return Response({'detail': 'Only tutors can create a profile.'}, status=status.HTTP_403_FORBIDDEN)
-        if TutorProfile.objects.filter(user=request.user).exists():
-            return Response({'detail': 'Profile already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = TutorProfileSerializer(data=request.data)
+        profile, created = TutorProfile.objects.get_or_create(user=request.user)
+        serializer = TutorProfileSerializer(profile, data=request.data, partial=not created)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)
 
     def put(self, request):
         profile = get_object_or_404(TutorProfile, user=request.user)
