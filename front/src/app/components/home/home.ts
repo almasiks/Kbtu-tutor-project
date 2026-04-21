@@ -10,6 +10,7 @@ interface TutorCard {
   name: string;
   subject: string;
   rating: number;
+  experience: number;
 }
 
 @Component({
@@ -33,11 +34,9 @@ export class Home implements OnInit {
   minRating = 0;
 
   readonly maxStars = 5;
+  readonly skeletonCards = [1, 2, 3];
 
   ngOnInit(): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId:'run-2',hypothesisId:'H9',location:'home.ts:ngOnInit',message:'Home init platform check',data:{isBrowser:isPlatformBrowser(this.platformId)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
@@ -49,9 +48,6 @@ export class Home implements OnInit {
   }
 
   applyFilter(): void {
-    
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId:'run-1',hypothesisId:'H2',location:'home.ts:applyFilter',message:'Applying local filters',data:{searchQuery:this.searchQuery,selectedSubject:this.selectedSubject,minRating:this.minRating,totalTutors:this.tutors.length},timestamp:Date.now()})}).catch(()=>{});
-    
     const normalized = this.searchQuery.trim().toLowerCase();
     this.filteredTutors = this.tutors.filter((tutor) => {
       const matchesQuery =
@@ -74,9 +70,6 @@ export class Home implements OnInit {
   refreshFromServer(runId: string = 'run-1'): void {
     this.isLoading = true;
     this.showToast = false;
-    // #region agent log
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId,hypothesisId:'H1',location:'home.ts:refreshFromServer',message:'Starting tutors API request',data:{api:'/api/tutors/'},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     this.apiService.getTutors().subscribe({
       next: (tutors) => {
         this.tutors = tutors.map((tutor: TutorDetail) => ({
@@ -84,31 +77,34 @@ export class Home implements OnInit {
           name: tutor.user?.username ?? 'Unknown tutor',
           subject: tutor.subject?.name ?? 'Без предмета',
           rating: Number(tutor.rating ?? 0),
+          experience: Number(tutor.experience_years ?? 0),
         }));
         this.applyFilter();
         this.isLoading = false;
-        this.showToast = true;
-        // #region agent log
-        fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId:'run-3',hypothesisId:'H11',location:'home.ts:refreshFromServer',message:'Tutors API success and mapped',data:{receivedTutors:tutors.length,firstTutorUsername:tutors[0]?.user?.username ?? null},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
+        this.showToast = false;
       },
       error: (error) => {
         this.isLoading = false;
         this.showToast = false;
         console.error('Failed to load tutors from backend', error);
         alert('Не удалось загрузить репетиторов с сервера.');
-        // #region agent log
-        fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId:'run-3',hypothesisId:'H12',location:'home.ts:refreshFromServer',message:'Tutors API failed or timed out',data:{api:'http://127.0.0.1:8000/api/tutors/',errorName:error?.name,errorStatus:error?.status},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
       },
     });
   }
 
   selectTutor(tutorId: number): void {
     // #region agent log
-    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b74f88'},body:JSON.stringify({sessionId:'b74f88',runId:'run-1',hypothesisId:'H3',location:'home.ts:selectTutor',message:'Tutor selection click',data:{tutorId},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ba5ba2'},body:JSON.stringify({sessionId:'ba5ba2',runId:'pre-fix',hypothesisId:'H1',location:'home.ts:95',message:'selectTutor called from button click',data:{tutorId,isLoading:this.isLoading},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
-    this.router.navigate(['/tutor', tutorId]);
+    this.router.navigate(['/tutor', tutorId]).then((ok) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ba5ba2'},body:JSON.stringify({sessionId:'ba5ba2',runId:'pre-fix',hypothesisId:'H2',location:'home.ts:98',message:'router.navigate resolved',data:{tutorId,navigationOk:ok},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+    }).catch((error) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7769/ingest/3cf38c3b-67dc-4a61-ac97-c68afdef46a4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ba5ba2'},body:JSON.stringify({sessionId:'ba5ba2',runId:'pre-fix',hypothesisId:'H3',location:'home.ts:102',message:'router.navigate rejected',data:{tutorId,errorMessage:error?.message ?? 'unknown'},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+    });
   }
 
   getStars(rating: number): boolean[] {

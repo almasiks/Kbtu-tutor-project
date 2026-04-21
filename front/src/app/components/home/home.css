@@ -102,11 +102,17 @@ input[type='range'] {
 }
 
 .btn {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 0.55rem;
   padding: 0.62rem 1rem;
   font-size: 0.95rem;
   cursor: pointer;
+  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -117,6 +123,16 @@ input[type='range'] {
 .btn-light {
   background: #e9ecef;
   color: #1f2937;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: #2359cf;
+  color: #2359cf;
+}
+
+.btn-outline:hover {
+  background: #eef3ff;
 }
 
 .list-head {
@@ -150,12 +166,12 @@ h2 {
   border-radius: 0.9rem;
   box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
   padding: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tutor-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(17, 24, 39, 0.18);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px rgba(17, 24, 39, 0.2);
 }
 
 .tutor-top {
@@ -179,6 +195,22 @@ h2 {
 h3 {
   margin: 0;
   font-size: 1.05rem;
+}
+
+.tutor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.exp-badge {
+  display: inline-block;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
 }
 
 .tutor-top p {
@@ -209,6 +241,57 @@ h3 {
 
 .full {
   width: 100%;
+}
+
+.no-results {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.1);
+  color: #6b7280;
+}
+
+.skeleton-card:hover {
+  transform: none;
+  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #ebedf0 25%, #f4f6f8 37%, #ebedf0 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-lines {
+  width: 100%;
+}
+
+.skeleton-line {
+  height: 0.65rem;
+  border-radius: 999px;
+  width: 100%;
+  margin-bottom: 0.45rem;
+}
+
+.skeleton-line.short {
+  width: 55%;
+}
+
+.skeleton-btn {
+  height: 2.3rem;
+  border-radius: 0.55rem;
+  width: 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 @media (max-width: 860px) {

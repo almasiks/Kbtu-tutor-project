@@ -7,8 +7,6 @@
 
       @if (isLoading) {
         <div class="toast loading">Загрузка списка...</div>
-      } @else if (showToast) {
-        <div class="toast success">Список загружен с API.</div>
       }
     </div>
   </header>
@@ -17,12 +15,12 @@
     <div class="filter-row">
       <label class="field">
         <span>Поиск</span>
-        <input [(ngModel)]="searchQuery" type="text" placeholder="Имя или предмет..." />
+        <input [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()" type="text" placeholder="Имя или предмет..." />
       </label>
 
       <label class="field">
         <span>Предмет</span>
-        <select [(ngModel)]="selectedSubject">
+        <select [(ngModel)]="selectedSubject" (ngModelChange)="applyFilter()">
           <option value="all">Все предметы</option>
           @for (subject of subjects; track subject) {
             <option [value]="subject">{{ subject }}</option>
@@ -32,14 +30,13 @@
 
       <label class="field">
         <span>Мин. рейтинг: {{ minRating.toFixed(1) }}</span>
-        <input [(ngModel)]="minRating" type="range" min="0" max="5" step="0.1" />
+        <input [(ngModel)]="minRating" (ngModelChange)="applyFilter()" type="range" min="0" max="5" step="0.1" />
       </label>
     </div>
 
     <div class="actions">
-      <button class="btn btn-primary" type="button" (click)="applyFilter()">К результатам</button>
-      <button class="btn btn-light" type="button" (click)="resetFilter()">Сбросить</button>
-      <button class="btn btn-light" type="button" (click)="refreshFromServer()">Обновить с сервера</button>
+      <button class="btn btn-primary" type="button" [disabled]="isLoading" (click)="applyFilter()">{{ isLoading ? 'Загрузка...' : 'К результатам' }}</button>
+      <button class="btn btn-outline" type="button" (click)="resetFilter()">Сбросить</button>
     </div>
   </section>
 
@@ -48,28 +45,54 @@
     <p>Найдено: {{ filteredTutors.length }} из {{ tutors.length }}</p>
   </section>
 
-  <section class="cards">
-    @for (tutor of filteredTutors; track tutor.id) {
-      <article class="tutor-card">
-        <div class="tutor-top">
-          <div class="avatar">{{ tutor.name.charAt(0) }}</div>
-          <div>
-            <h3>{{ tutor.name }}</h3>
-            <p>{{ tutor.subject }}</p>
+  @if (isLoading) {
+    <section class="cards">
+      @for (_ of skeletonCards; track $index) {
+        <article class="tutor-card skeleton-card">
+          <div class="tutor-top">
+            <div class="avatar skeleton"></div>
+            <div class="skeleton-lines">
+              <div class="skeleton skeleton-line short"></div>
+              <div class="skeleton skeleton-line"></div>
+            </div>
           </div>
-        </div>
-
-        <div class="rating-row">
-          <span class="rating">{{ tutor.rating.toFixed(2) }}</span>
-          <div class="stars">
-            @for (star of getStars(tutor.rating); track $index) {
-              <span [class.filled]="star">★</span>
-            }
+          <div class="rating-row">
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line"></div>
           </div>
-        </div>
+          <div class="skeleton skeleton-btn"></div>
+        </article>
+      }
+    </section>
+  } @else if (filteredTutors.length === 0) {
+    <div class="no-results">Репетиторы не найдены, попробуйте изменить фильтры</div>
+  } @else {
+    <section class="cards">
+      @for (tutor of filteredTutors; track tutor.id) {
+        <article class="tutor-card">
+          <div class="tutor-top">
+            <div class="avatar">{{ tutor.name.charAt(0) }}</div>
+            <div>
+              <div class="tutor-title-row">
+                <h3>{{ tutor.name }}</h3>
+                <span class="exp-badge">Exp: {{ tutor.experience }} yrs</span>
+              </div>
+              <p>{{ tutor.subject }}</p>
+            </div>
+          </div>
 
-        <button class="btn btn-primary full" type="button" (click)="selectTutor(tutor.id)">Выбрать</button>
-      </article>
-    }
-  </section>
+          <div class="rating-row">
+            <span class="rating">{{ tutor.rating.toFixed(2) }}</span>
+            <div class="stars">
+              @for (star of getStars(tutor.rating); track $index) {
+                <span [class.filled]="star">★</span>
+              }
+            </div>
+          </div>
+
+          <button class="btn btn-primary full" type="button" (click)="selectTutor(tutor.id)">Выбрать</button>
+        </article>
+      }
+    </section>
+  }
 </section>
