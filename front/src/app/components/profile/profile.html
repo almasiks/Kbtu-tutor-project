@@ -1,3 +1,83 @@
+<ng-template #bookingsBlock>
+  <div class="info-card">
+    <h2 class="card-title">Мои бронирования</h2>
+    @if (bookings.length === 0) {
+      <p class="empty-msg">У вас пока нет бронирований. Найдите тьютора на <a class="link-home" routerLink="/">главной странице</a>.</p>
+    } @else {
+      <div class="bookings-list">
+        @for (b of bookings; track b.id) {
+          <div class="booking-item">
+            <div class="booking-item-left">
+              <div class="booking-date-block">
+                <span class="booking-day">{{ b.lesson_slot_detail?.start_time | date:'d':'UTC' }}</span>
+                <span class="booking-month">{{ b.lesson_slot_detail?.start_time | date:'MMM':'UTC' }}</span>
+              </div>
+              <div class="booking-info">
+                <span class="booking-tutor">{{ b.lesson_slot_detail?.tutor_username ?? 'Тьютор' }}</span>
+                @if (b.lesson_slot_detail?.tutor_subject) {
+                  <span class="booking-subject">{{ b.lesson_slot_detail.tutor_subject }}</span>
+                }
+                <span class="booking-time">
+                  {{ b.lesson_slot_detail?.start_time | date:'HH:mm':'UTC' }} — {{ b.lesson_slot_detail?.end_time | date:'HH:mm':'UTC' }}
+                  &nbsp;·&nbsp; {{ b.lesson_slot_detail?.start_time | date:'d MMM yyyy':'UTC' }}
+                </span>
+                @if (b.lesson_slot_detail?.tutor_hourly_rate) {
+                  <span class="booking-price">{{ b.lesson_slot_detail.tutor_hourly_rate }} KZT/час</span>
+                }
+              </div>
+            </div>
+            <div class="booking-item-right">
+              <span class="booking-status" [class]="statusClass(b.status)">{{ statusLabel(b.status) }}</span>
+              @if (b.status === 'Confirmed') {
+                <button class="btn-complete" [disabled]="completingBookingId === b.id" (click)="markCompleted(b.id)">
+                  {{ completingBookingId === b.id ? '…' : 'Завершить' }}
+                </button>
+              }
+              @if (b.status === 'Completed' && !b.is_rated) {
+                <button class="btn-rate" (click)="openRating(b.id)">Оценить</button>
+              }
+              @if (b.status === 'Completed' && b.is_rated) {
+                <span class="rated-badge">Оценено</span>
+              }
+            </div>
+          </div>
+
+          @if (ratingBookingId === b.id) {
+            <div class="rating-form">
+              <div class="rating-stars">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <button
+                    class="star-btn"
+                    [class.active]="ratingScore >= star"
+                    (click)="setRatingScore(star)"
+                    type="button"
+                  >★</button>
+                }
+              </div>
+              <textarea
+                class="field-input rating-comment"
+                [(ngModel)]="ratingComment"
+                name="ratingComment"
+                rows="2"
+                placeholder="Комментарий (необязательно)…"
+              ></textarea>
+              @if (ratingError) {
+                <div class="rating-error">{{ ratingError }}</div>
+              }
+              <div class="rating-actions">
+                <button class="btn btn-primary" [disabled]="ratingSubmitting || ratingScore < 1" (click)="submitRating()">
+                  {{ ratingSubmitting ? 'Отправка…' : 'Отправить оценку' }}
+                </button>
+                <button class="btn btn-ghost" (click)="closeRating()" [disabled]="ratingSubmitting">Отмена</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
 <div class="profile-page">
   <div class="profile-inner">
 
@@ -11,7 +91,6 @@
       <div class="error-state"><p class="error-msg">{{ error }}</p></div>
 
     } @else if (storedUser?.is_staff && !storedUser?.is_tutor) {
-      <!-- ── Admin ── -->
       <div class="profile-hero">
         <div class="avatar-lg">{{ storedUser?.username?.charAt(0)?.toUpperCase() }}</div>
         <div class="profile-hero-info">
@@ -23,12 +102,11 @@
         <h2 class="card-title">Панель управления</h2>
         <p class="card-bio">Вы вошли как администратор. Используйте <strong>Админ-панель</strong> для управления пользователями и предметами.</p>
       </div>
+      <ng-container *ngTemplateOutlet="bookingsBlock"></ng-container>
 
     } @else if (storedUser?.is_tutor) {
-      <!-- ── Tutor ── -->
       @if (profile) {
 
-        <!-- Hero -->
         <div class="profile-hero">
           <div class="avatar-lg">{{ profile.user.username.charAt(0).toUpperCase() }}</div>
           <div class="profile-hero-info">
@@ -45,7 +123,6 @@
           }
         </div>
 
-        <!-- VIEW mode -->
         @if (!editing) {
           <div class="cards-row">
             <div class="info-card">
@@ -71,7 +148,6 @@
           </div>
         }
 
-        <!-- EDIT mode -->
         @if (editing) {
           <div class="edit-card">
             <div class="edit-card-head">
@@ -112,14 +188,12 @@
           </div>
         }
 
-        <!-- ── Slots section ── -->
         <div class="slots-section">
           <div class="slots-section-head">
             <h2 class="section-title">Мои слоты</h2>
             <span class="slots-count">{{ slots.length }} слот(ов)</span>
           </div>
 
-          <!-- Create slot form -->
           <div class="slot-add-card">
             <h3 class="slot-add-title">+ Новый слот</h3>
             @if (slotError) {
@@ -140,7 +214,6 @@
             </div>
           </div>
 
-          <!-- Slots list -->
           @if (slotsLoading) {
             <div class="slots-loading"><span class="spinner-sm"></span> Загрузка слотов…</div>
           } @else if (slots.length === 0) {
@@ -150,9 +223,9 @@
               @for (slot of slots; track slot.id) {
                 <div class="slot-item" [class.slot-booked]="slot.is_booked">
                   <div class="slot-times">
-                    <span class="slot-date">{{ slot.start_time | date:'d MMM yyyy' }}</span>
+                    <span class="slot-date">{{ slot.start_time | date:'d MMM yyyy':'UTC' }}</span>
                     <span class="slot-time-range">
-                      {{ slot.start_time | date:'HH:mm' }} — {{ slot.end_time | date:'HH:mm' }}
+                      {{ slot.start_time | date:'HH:mm':'UTC' }} — {{ slot.end_time | date:'HH:mm':'UTC' }}
                     </span>
                   </div>
                   <div class="slot-right">
@@ -171,16 +244,18 @@
           }
         </div>
 
+        <ng-container *ngTemplateOutlet="bookingsBlock"></ng-container>
+
       } @else {
         <div class="no-profile-card">
           <div class="no-profile-icon">📋</div>
           <h2>Профиль тьютора не создан</h2>
           <p>Ваш аккаунт имеет роль тьютора, но профиль ещё не заполнен.</p>
         </div>
+        <ng-container *ngTemplateOutlet="bookingsBlock"></ng-container>
       }
 
     } @else {
-      <!-- ── Student ── -->
       <div class="profile-hero">
         <div class="avatar-lg">{{ storedUser?.username?.charAt(0)?.toUpperCase() }}</div>
         <div class="profile-hero-info">
@@ -188,40 +263,7 @@
           <div class="profile-tags"><span class="tag tag-student">Студент</span></div>
         </div>
       </div>
-
-      <div class="info-card">
-        <h2 class="card-title">Мои бронирования</h2>
-        @if (bookings.length === 0) {
-          <p class="empty-msg">У вас пока нет бронирований. Найдите тьютора на <a class="link-home" routerLink="/">главной странице</a>.</p>
-        } @else {
-          <div class="bookings-list">
-            @for (b of bookings; track b.id) {
-              <div class="booking-item">
-                <div class="booking-item-left">
-                  <div class="booking-date-block">
-                    <span class="booking-day">{{ b.lesson_slot_detail?.start_time | date:'d' }}</span>
-                    <span class="booking-month">{{ b.lesson_slot_detail?.start_time | date:'MMM' }}</span>
-                  </div>
-                  <div class="booking-info">
-                    <span class="booking-tutor">{{ b.lesson_slot_detail?.tutor_username ?? 'Тьютор' }}</span>
-                    @if (b.lesson_slot_detail?.tutor_subject) {
-                      <span class="booking-subject">{{ b.lesson_slot_detail.tutor_subject }}</span>
-                    }
-                    <span class="booking-time">
-                      {{ b.lesson_slot_detail?.start_time | date:'HH:mm' }} — {{ b.lesson_slot_detail?.end_time | date:'HH:mm' }}
-                      &nbsp;·&nbsp; {{ b.lesson_slot_detail?.start_time | date:'d MMM yyyy' }}
-                    </span>
-                    @if (b.lesson_slot_detail?.tutor_hourly_rate) {
-                      <span class="booking-price">{{ b.lesson_slot_detail.tutor_hourly_rate }} KZT/час</span>
-                    }
-                  </div>
-                </div>
-                <span class="booking-status" [class]="statusClass(b.status)">{{ statusLabel(b.status) }}</span>
-              </div>
-            }
-          </div>
-        }
-      </div>
+      <ng-container *ngTemplateOutlet="bookingsBlock"></ng-container>
     }
 
   </div>

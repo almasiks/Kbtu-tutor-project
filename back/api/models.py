@@ -35,6 +35,12 @@ class TutorProfile(models.Model):
     def __str__(self):
         return f"Tutor: {self.user.username}"
 
+    def update_rating(self):
+        from django.db.models import Avg
+        avg = self.ratings.aggregate(avg=Avg('score'))['avg']
+        self.rating = round(avg, 2) if avg is not None else 0
+        self.save(update_fields=['rating'])
+
 
 class LessonSlot(models.Model):
     tutor = models.ForeignKey(TutorProfile, on_delete=models.CASCADE, related_name='slots')
@@ -67,3 +73,18 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.student.username} -> {self.lesson_slot}"
+
+
+class Rating(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='rating')
+    tutor = models.ForeignKey(TutorProfile, on_delete=models.CASCADE, related_name='ratings')
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='given_ratings')
+    score = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.student.username} -> {self.tutor}: {self.score}/5"

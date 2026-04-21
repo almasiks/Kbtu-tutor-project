@@ -11,7 +11,7 @@ from .models import Subject, TutorProfile, LessonSlot, Booking
 from .serializers import (
     RegisterSerializer, LoginSerializer,
     SubjectSerializer, TutorProfileSerializer,
-    LessonSlotSerializer, BookingSerializer,
+    LessonSlotSerializer, BookingSerializer, RatingSerializer,
 )
 
 User = get_user_model()
@@ -265,6 +265,24 @@ class SubjectView(APIView):
             return err
         get_object_or_404(Subject, pk=pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RatingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        booking_id = request.data.get('booking')
+        booking = get_object_or_404(Booking, pk=booking_id, student=request.user)
+        if booking.status != 'Completed':
+            return Response({'detail': 'Only completed bookings can be rated.'}, status=status.HTTP_400_BAD_REQUEST)
+        if hasattr(booking, 'rating'):
+            return Response({'detail': 'Already rated.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = RatingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tutor = booking.lesson_slot.tutor
+        rating = serializer.save(tutor=tutor, student=request.user)
+        tutor.update_rating()
+        return Response(RatingSerializer(rating).data, status=status.HTTP_201_CREATED)
 
 
 class UserAdminView(APIView):

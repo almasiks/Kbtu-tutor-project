@@ -14,7 +14,7 @@
   gap: 1.25rem;
 }
 
-/* Loading / error */
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -38,7 +38,6 @@
 .error-state { padding: 2rem; }
 .error-msg { color: #dc2626; font-size: 0.9rem; }
 
-/* Profile hero */
 .profile-hero {
   background: linear-gradient(135deg, #0f2744, #1d4ed8);
   border-radius: 20px;
@@ -104,7 +103,6 @@
 .tag-subject { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 .tag-student { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 
-/* Cards */
 .cards-row {
   display: grid;
   gap: 1.25rem;
@@ -140,7 +138,6 @@
   line-height: 1.65;
 }
 
-/* Stats card */
 .stats-card {
   display: flex;
   flex-direction: column;
@@ -179,7 +176,6 @@
   margin: 0;
 }
 
-/* No profile */
 .no-profile-card {
   text-align: center;
   padding: 3rem 2rem;
@@ -189,7 +185,6 @@
 .no-profile-card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; color: #0f172a; }
 .no-profile-card p { margin: 0; color: #64748b; font-size: 0.9rem; }
 
-/* Bookings */
 .bookings-list {
   display: flex;
   flex-direction: column;
@@ -273,7 +268,6 @@
 
 .empty-msg { color: #94a3b8; font-size: 0.9rem; margin: 0; }
 
-/* Edit button on hero */
 .btn-edit {
   margin-left: auto;
   align-self: flex-start;
@@ -292,7 +286,6 @@
 
 .btn-edit:hover { background: rgba(255,255,255,0.22); }
 
-/* Edit card */
 .edit-card {
   background: #fff;
   border-radius: 16px;
@@ -404,7 +397,6 @@
 .btn-ghost { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 .btn-ghost:hover:not(:disabled) { background: #e2e8f0; }
 
-/* Slots section */
 .slots-section {
   background: #fff;
   border-radius: 16px;
@@ -437,7 +429,6 @@
   border-radius: 999px;
 }
 
-/* Add slot form */
 .slot-add-card {
   padding: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -498,7 +489,6 @@
   height: fit-content;
 }
 
-/* Slots list */
 .slots-loading {
   display: flex;
   align-items: center;
@@ -602,6 +592,107 @@
 .btn-delete-slot:hover:not(:disabled) { background: #fecaca; }
 .btn-delete-slot:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Misc */
+.booking-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-complete {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px solid #059669;
+  background: transparent;
+  color: #059669;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-complete:hover:not(:disabled) { background: #059669; color: #fff; }
+.btn-complete:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-rate {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px solid #1d4ed8;
+  background: transparent;
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-rate:hover { background: #1d4ed8; color: #fff; }
+
+.rated-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #065f46;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.rating-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f0f4ff;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star-btn {
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cbd5e1;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.1s, transform 0.1s;
+}
+
+.star-btn.active { color: #f59e0b; }
+.star-btn:hover { transform: scale(1.15); }
+
+.rating-comment {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.rating-error {
+  padding: 0.6rem 0.85rem;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.rating-actions {
+  display: flex;
+  gap: 0.65rem;
+}
+
 .link-home { color: #1d4ed8; text-decoration: none; font-weight: 600; }
 .link-home:hover { text-decoration: underline; }

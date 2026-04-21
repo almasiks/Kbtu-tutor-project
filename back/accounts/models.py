@@ -3,8 +3,6 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """Custom user with tutor flag for role-based UI and permissions."""
-
     is_tutor = models.BooleanField(default=False, db_index=True)
 
     class Meta:

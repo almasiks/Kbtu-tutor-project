@@ -13,8 +13,6 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  // ─── Auth ────────────────────────────────────────────────────────────────
-
   login(credentials: { username: string; password: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login/`, credentials).pipe(
       tap((res) => this._saveSession(res)),
@@ -32,8 +30,6 @@ export class ApiService {
       tap(() => this._clearSession()),
     );
   }
-
-  // ─── Tutors ──────────────────────────────────────────────────────────────
 
   getTutors(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/tutors/`);
@@ -67,8 +63,6 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/slots/${id}/`);
   }
 
-  // ─── Subjects ────────────────────────────────────────────────────────────
-
   getSubjects(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/subjects/`);
   }
@@ -81,8 +75,6 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/subjects/${id}/`);
   }
 
-  // ─── Bookings ────────────────────────────────────────────────────────────
-
   createBooking(lessonSlotId: number): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/bookings/`, { lesson_slot: lessonSlotId });
   }
@@ -91,7 +83,17 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/bookings/`);
   }
 
-  // ─── Admin ───────────────────────────────────────────────────────────────
+  cancelBooking(bookingId: number): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/bookings/${bookingId}/`, { status: 'Cancelled' });
+  }
+
+  completeBooking(bookingId: number): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/bookings/${bookingId}/`, { status: 'Completed' });
+  }
+
+  submitRating(bookingId: number, score: number, comment: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/ratings/`, { booking: bookingId, score, comment });
+  }
 
   adminGetUsers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/admin/users/`);
@@ -104,8 +106,6 @@ export class ApiService {
   adminRegisterTutor(data: { username: string; email: string; password: string }): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/auth/register/`, { ...data, is_tutor: true });
   }
-
-  // ─── Session helpers ─────────────────────────────────────────────────────
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem(AUTH_TOKEN_KEY);

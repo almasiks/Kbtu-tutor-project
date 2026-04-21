@@ -23,13 +23,11 @@ export class ProfileComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  // ── Edit profile ─────────────────────────────────────────────────────────
   editing = false;
   saving = false;
   saveError: string | null = null;
   form = { bio: '', experience_years: 0, hourly_rate: 0, subject_id: null as number | null };
 
-  // ── Slots ────────────────────────────────────────────────────────────────
   slots: any[] = [];
   slotsLoading = false;
   slotStart = '';
@@ -37,6 +35,14 @@ export class ProfileComponent implements OnInit {
   addingSlot = false;
   slotError: string | null = null;
   deletingSlotId: number | null = null;
+
+  completingBookingId: number | null = null;
+
+  ratingBookingId: number | null = null;
+  ratingScore = 0;
+  ratingComment = '';
+  ratingSubmitting = false;
+  ratingError: string | null = null;
 
   constructor(
     private api: ApiService,
@@ -48,6 +54,11 @@ export class ProfileComponent implements OnInit {
     this.api.currentUser$.pipe(take(1)).subscribe((user) => {
       this.storedUser = user;
       if (!user) { this.router.navigate(['/login']); return; }
+
+      this.api.getMyBookings().subscribe({
+        next: (b) => { this.bookings = b; this.cdr.markForCheck(); },
+        error: () => {},
+      });
 
       if (user.is_tutor) {
         this.api.getSubjects().subscribe({
@@ -70,15 +81,9 @@ export class ProfileComponent implements OnInit {
       } else {
         this.loading = false;
         this.cdr.markForCheck();
-        this.api.getMyBookings().subscribe({
-          next: (b) => { this.bookings = b; this.cdr.markForCheck(); },
-          error: () => {},
-        });
       }
     });
   }
-
-  // ── Profile edit ─────────────────────────────────────────────────────────
 
   startEdit(): void {
     this.form = {
@@ -118,8 +123,6 @@ export class ProfileComponent implements OnInit {
       },
     });
   }
-
-  // ── Slots ────────────────────────────────────────────────────────────────
 
   loadSlots(): void {
     this.slotsLoading = true;
@@ -170,8 +173,6 @@ export class ProfileComponent implements OnInit {
     return slot.is_booked ? 'Забронирован' : 'Свободен';
   }
 
-  // ── Bookings (student) ────────────────────────────────────────────────────
-
   statusClass(s: string): string {
     if (s === 'Confirmed') return 'status-confirmed';
     if (s === 'Cancelled') return 'status-cancelled';
@@ -184,5 +185,54 @@ export class ProfileComponent implements OnInit {
     if (s === 'Cancelled') return 'Отменено';
     if (s === 'Completed') return 'Завершено';
     return s;
+  }
+
+  markCompleted(bookingId: number): void {
+    this.completingBookingId = bookingId;
+    this.api.completeBooking(bookingId).subscribe({
+      next: (updated) => {
+        this.bookings = this.bookings.map((b) => b.id === bookingId ? { ...b, ...updated } : b);
+        this.completingBookingId = null;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.completingBookingId = null; this.cdr.markForCheck(); },
+    });
+  }
+
+  openRating(bookingId: number): void {
+    this.ratingBookingId = bookingId;
+    this.ratingScore = 0;
+    this.ratingComment = '';
+    this.ratingError = null;
+  }
+
+  closeRating(): void {
+    this.ratingBookingId = null;
+    this.ratingError = null;
+  }
+
+  setRatingScore(score: number): void {
+    this.ratingScore = score;
+  }
+
+  submitRating(): void {
+    if (!this.ratingBookingId || this.ratingScore < 1) return;
+    this.ratingSubmitting = true;
+    this.ratingError = null;
+    this.api.submitRating(this.ratingBookingId, this.ratingScore, this.ratingComment).subscribe({
+      next: () => {
+        this.bookings = this.bookings.map((b) =>
+          b.id === this.ratingBookingId ? { ...b, is_rated: true } : b
+        );
+        this.ratingSubmitting = false;
+        this.ratingBookingId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.ratingError = err?.error?.detail ?? 'Ошибка при отправке оценки.';
+        this.ratingSubmitting = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

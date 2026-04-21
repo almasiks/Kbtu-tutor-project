@@ -72,8 +72,8 @@
                   (click)="selectSlot(slot.id)"
                 >
                   <div class="slot-btn-left">
-                    <span class="slot-date">{{ slot.start_time | date:'d MMM yyyy' }}</span>
-                    <span class="slot-time">{{ slot.start_time | date:'HH:mm' }} — {{ slot.end_time | date:'HH:mm' }}</span>
+                    <span class="slot-date">{{ slot.start_time | date:'d MMM yyyy':'UTC' }}</span>
+                    <span class="slot-time">{{ slot.start_time | date:'HH:mm':'UTC' }} — {{ slot.end_time | date:'HH:mm':'UTC' }}</span>
                   </div>
                   @if (selectedSlotId === slot.id) {
                     <span class="slot-check">✓</span>
@@ -92,11 +92,11 @@
                 <div class="booking-summary-body">
                   <div class="booking-summary-row">
                     <span class="bsr-key">Дата</span>
-                    <span class="bsr-val">{{ selectedSlot.start_time | date:'d MMMM yyyy' }}</span>
+                    <span class="bsr-val">{{ selectedSlot.start_time | date:'d MMMM yyyy':'UTC' }}</span>
                   </div>
                   <div class="booking-summary-row">
                     <span class="bsr-key">Время</span>
-                    <span class="bsr-val">{{ selectedSlot.start_time | date:'HH:mm' }} — {{ selectedSlot.end_time | date:'HH:mm' }}</span>
+                    <span class="bsr-val">{{ selectedSlot.start_time | date:'HH:mm':'UTC' }} — {{ selectedSlot.end_time | date:'HH:mm':'UTC' }}</span>
                   </div>
                   <div class="booking-summary-row">
                     <span class="bsr-key">Тьютор</span>

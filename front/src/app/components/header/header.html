@@ -16,9 +16,9 @@
           Админ
         </a>
       }
-      @if (user?.is_tutor || user?.is_staff) {
+      @if (user) {
         <a class="nav-link" routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">
-          Мой профиль
+          @if (user.is_tutor || user.is_staff) { Мой профиль } @else { Мои бронирования }
         </a>
       }
     </nav>

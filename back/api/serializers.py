@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate, get_user_model
 
 User = get_user_model()
-from .models import Subject, TutorProfile, LessonSlot, Booking
+from .models import Subject, TutorProfile, LessonSlot, Booking, Rating
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -87,13 +87,29 @@ class LessonSlotSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     student_username = serializers.CharField(source='student.username', read_only=True)
     lesson_slot_detail = LessonSlotSerializer(source='lesson_slot', read_only=True)
+    is_rated = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
-        fields = ['id', 'student', 'student_username', 'lesson_slot', 'lesson_slot_detail', 'created_at', 'status']
+        fields = ['id', 'student', 'student_username', 'lesson_slot', 'lesson_slot_detail', 'created_at', 'status', 'is_rated']
         read_only_fields = ['student', 'created_at']
 
     def validate_lesson_slot(self, slot):
         if slot.is_booked:
             raise serializers.ValidationError("This slot is already booked.")
         return slot
+
+    def get_is_rated(self, obj):
+        return hasattr(obj, 'rating')
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'booking', 'score', 'comment', 'created_at']
+        read_only_fields = ['created_at']
+
+    def validate_score(self, value):
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("Score must be between 1 and 5.")
+        return value

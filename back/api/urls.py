@@ -22,6 +22,8 @@ urlpatterns = [
     path('subjects/', views.SubjectView.as_view(), name='subject-list'),
     path('subjects/<int:pk>/', views.SubjectView.as_view(), name='subject-detail'),
 
+    path('ratings/', views.RatingView.as_view(), name='rating-create'),
+
     path('admin/users/', views.UserAdminView.as_view(), name='admin-user-list'),
     path('admin/users/<int:pk>/', views.UserAdminView.as_view(), name='admin-user-detail'),
 ]
