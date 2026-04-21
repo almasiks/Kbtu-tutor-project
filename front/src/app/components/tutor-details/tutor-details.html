@@ -1,4 +1,27 @@
 <section class="details">
   <h2>Страница репетитора</h2>
-  <p>Вы открыли защищенный роут для репетитора с ID: {{ tutorId }}</p>
+  <p>ID: {{ tutorId }}</p>
+
+  @if (tutor) {
+    <p><strong>Имя:</strong> {{ tutor.user.username }}</p>
+    <p><strong>Предмет:</strong> {{ tutor.subject?.name || 'Не указан' }}</p>
+    <p><strong>Рейтинг:</strong> {{ tutor.rating }}</p>
+  }
+
+  <button class="action-btn" type="button" [disabled]="isSubmitting" (click)="bookLesson()">Забронировать занятие</button>
+  @if (bookingNotice) {
+    <p class="notice">{{ bookingNotice }}</p>
+  }
+
+  <div class="rating-widget">
+    <p>Поставить оценку:</p>
+    <div class="stars">
+      @for (star of stars; track star) {
+        <button class="star-btn" type="button" [class.active]="star <= selectedScore" (click)="rateTutor(star)">★</button>
+      }
+    </div>
+  </div>
+  @if (ratingNotice) {
+    <p class="notice">{{ ratingNotice }}</p>
+  }
 </section>

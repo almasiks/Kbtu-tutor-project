@@ -1,0 +1,106 @@
+<section class="page">
+  <app-header></app-header>
+
+  <div class="content-wrap">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+      <a routerLink="/">Главная</a>
+      <span class="sep">›</span>
+      <span>Репетиторы онлайн</span>
+      <span class="sep">›</span>
+      <span class="current">{{ subjectName || 'Предмет' }}</span>
+    </nav>
+
+    <h1 class="page-title">Тьюторы по предмету: <span>{{ subjectName }}</span></h1>
+
+    <div class="layout">
+      <!-- Sidebar filters -->
+      <aside class="sidebar">
+        <h3>Фильтры</h3>
+
+        <div class="filter-group">
+          <label>Цена (₸/час)</label>
+          <div class="price-row">
+            <input type="number" [(ngModel)]="minPrice" placeholder="от" (change)="applyFilters()" />
+            <input type="number" [(ngModel)]="maxPrice" placeholder="до" (change)="applyFilters()" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Формат</label>
+          <div class="format-options">
+            <button [class.active]="selectedFormat === 'all'" (click)="selectedFormat='all'; applyFilters()">Все</button>
+            <button [class.active]="selectedFormat === 'online'" (click)="selectedFormat='online'; applyFilters()">Онлайн</button>
+            <button [class.active]="selectedFormat === 'offline'" (click)="selectedFormat='offline'; applyFilters()">Офлайн</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Уровень</label>
+          <div class="format-options">
+            <button class="active">Все курсы</button>
+            <button>1–2 курс</button>
+            <button>3–4 курс</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Tutor list -->
+      <main class="tutor-list">
+        <p class="result-count">Найдено: {{ filtered.length }} тьюторов</p>
+
+        @if (isLoading) {
+          <div class="skeleton-list">
+            @for (i of [1,2,3]; track i) {
+              <div class="skeleton-card">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line medium"></div>
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line long"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (filtered.length === 0) {
+          <p class="state-msg">По данному предмету тьюторов пока нет.</p>
+        } @else {
+          @for (tutor of filtered; track tutor.id) {
+            <article class="tutor-card">
+              <div class="card-avatar">{{ tutor.user.username.charAt(0).toUpperCase() }}</div>
+
+              <div class="card-body">
+                <div class="card-header">
+                  <div>
+                    <h2>{{ tutor.user.username }}</h2>
+                    <p class="subject-tag">{{ tutor.subject?.name || subjectName }}</p>
+                  </div>
+                  <div class="card-price">
+                    <span class="price-value">{{ tutor.hourly_rate }} ₸</span>
+                    <span class="price-label">/ час</span>
+                  </div>
+                </div>
+
+                <div class="stars">
+                  @for (filled of getStars(tutor.rating); track $index) {
+                    <span class="star" [class.filled]="filled">★</span>
+                  }
+                  <span class="score">{{ tutor.rating }}</span>
+                </div>
+
+                <p class="bio">{{ tutor.bio || 'Готов помочь разобраться с предметом. Опыт — ' + tutor.experience_years + ' лет.' }}</p>
+
+                <div class="card-footer">
+                  <span class="exp-badge">Опыт: {{ tutor.experience_years }} лет</span>
+                  <button class="contact-btn" (click)="goToTutor(tutor.id)">Связаться</button>
+                </div>
+              </div>
+            </article>
+          }
+        }
+      </main>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</section>

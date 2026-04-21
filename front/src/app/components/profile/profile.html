@@ -1,1 +1,18 @@
-<p>profile works!</p>
+<section class="profile">
+  <h2>Личный кабинет</h2>
+  <h3>Мои бронирования</h3>
+
+  @if (bookings.length === 0) {
+    <p>Пока бронирований нет.</p>
+  } @else {
+    <ul class="bookings-list">
+      @for (booking of bookings; track booking.id) {
+        <li>
+          <strong>{{ booking.tutor_name }}</strong>
+          <span> — {{ booking.date | date: 'short' }}</span>
+          <span> ({{ booking.status }})</span>
+        </li>
+      }
+    </ul>
+  }
+</section>

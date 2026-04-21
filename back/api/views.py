@@ -113,6 +113,13 @@ def tutor_list(request):
         qs = qs.filter(subject_id=subject_id)
     return Response(TutorProfileSerializer(qs, many=True).data)
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def tutor_detail(_request, tutor_pk):
+    tutor = get_object_or_404(TutorProfile, pk=tutor_pk)
+    return Response(TutorProfileSerializer(tutor).data)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -226,36 +233,50 @@ class BookingView(APIView):
         if pk:
             booking = get_object_or_404(Booking, pk=pk, student=request.user)
             return Response(BookingSerializer(booking).data)
-        bookings = Booking.objects.filter(student=request.user).select_related('lesson_slot')
+        bookings = Booking.objects.filter(student=request.user).select_related('tutor', 'tutor__user', 'tutor__subject')
         return Response(BookingSerializer(bookings, many=True).data)
 
     def post(self, request):
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        slot = serializer.validated_data['lesson_slot']
         booking = serializer.save(student=request.user)
-        slot.is_booked = True
-        slot.save(update_fields=['is_booked'])
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
     def patch(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk, student=request.user)
         new_status = request.data.get('status')
-        if new_status not in ['Cancelled', 'Completed']:
+        if new_status not in ['pending', 'confirmed', 'cancelled']:
             return Response({'detail': 'Invalid status.'}, status=status.HTTP_400_BAD_REQUEST)
         booking.status = new_status
         booking.save(update_fields=['status'])
-        if new_status == 'Cancelled':
-            booking.lesson_slot.is_booked = False
-            booking.lesson_slot.save(update_fields=['is_booked'])
         return Response(BookingSerializer(booking).data)
 
     def delete(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk, student=request.user)
-        booking.lesson_slot.is_booked = False
-        booking.lesson_slot.save(update_fields=['is_booked'])
         booking.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tutor_rate(request, tutor_pk):
+    tutor = get_object_or_404(TutorProfile, pk=tutor_pk)
+    score = request.data.get('score')
+    try:
+        score = int(score)
+    except (TypeError, ValueError):
+        return Response({'detail': 'Score must be an integer from 1 to 5.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if score < 1 or score > 5:
+        return Response({'detail': 'Score must be between 1 and 5.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    current_rating = float(tutor.rating or 0)
+    current_count = Booking.objects.filter(tutor=tutor, status='confirmed').count()
+    new_rating = ((current_rating * current_count) + score) / (current_count + 1)
+    tutor.rating = round(new_rating, 2)
+    tutor.save(update_fields=['rating'])
+
+    return Response({'rating': tutor.rating}, status=status.HTTP_200_OK)
 
 
 class SubjectView(APIView):

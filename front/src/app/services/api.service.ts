@@ -41,12 +41,31 @@ export interface LoginResponse {
   token?: string;
   access?: string;
   refresh?: string;
+  user?: {
+    id: number;
+    username: string;
+    email: string;
+    role?: string;
+  };
   user_id: number;
   username: string;
 }
 
+export interface BookingItem {
+  id: number;
+  tutor: number;
+  tutor_name: string;
+  tutor_subject: string;
+  student: number;
+  student_username: string;
+  date: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+}
+
 export interface BookingPayload {
-  lesson_slot: number;
+  tutor: number;
+  date: string;
+  status?: 'pending' | 'confirmed' | 'cancelled';
 }
 
 @Injectable({
@@ -61,7 +80,7 @@ export class ApiService {
   }
 
   getTutorById(id: number): Observable<TutorDetail> {
-    return this.http.get<TutorDetail>(`${this.baseUrl}/tutors/profile/${id}/`).pipe(timeout(4000));
+    return this.http.get<TutorDetail>(`${this.baseUrl}/tutors/${id}/`).pipe(timeout(4000));
   }
 
   login(credentials: LoginPayload): Observable<LoginResponse> {
@@ -72,12 +91,23 @@ export class ApiService {
     return this.http.post<LoginResponse>(`${this.baseUrl}/auth/register/`, data).pipe(timeout(4000));
   }
 
-  bookSlot(slotId: number): Observable<unknown> {
-    const payload: BookingPayload = { lesson_slot: slotId };
-    return this.http.post<unknown>(`${this.baseUrl}/bookings/`, payload).pipe(timeout(4000));
+  createBooking(payload: BookingPayload): Observable<BookingItem> {
+    return this.http.post<BookingItem>(`${this.baseUrl}/bookings/`, payload).pipe(timeout(4000));
+  }
+
+  getMyBookings(): Observable<BookingItem[]> {
+    return this.http.get<BookingItem[]>(`${this.baseUrl}/bookings/`).pipe(timeout(4000));
+  }
+
+  rateTutor(tutorId: number, score: number): Observable<{ rating: string }> {
+    return this.http.post<{ rating: string }>(`${this.baseUrl}/tutors/${tutorId}/rate/`, { score }).pipe(timeout(4000));
   }
 
   getMyProfile(): Observable<TutorDetail> {
     return this.http.get<TutorDetail>(`${this.baseUrl}/tutors/profile/`).pipe(timeout(4000));
+  }
+
+  getTutorsBySubject(subjectId: string | number): Observable<TutorDetail[]> {
+    return this.http.get<TutorDetail[]>(`${this.baseUrl}/tutors/?subject=${subjectId}`).pipe(timeout(4000));
   }
 }

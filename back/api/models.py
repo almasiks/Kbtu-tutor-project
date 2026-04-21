@@ -52,18 +52,18 @@ class LessonSlot(models.Model):
 
 class Booking(models.Model):
     STATUS_CHOICES = [
-        ('Confirmed', 'Confirmed'),
-        ('Cancelled', 'Cancelled'),
-        ('Completed', 'Completed'),
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
     ]
 
+    tutor = models.ForeignKey(TutorProfile, on_delete=models.CASCADE, related_name='bookings')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
-    lesson_slot = models.OneToOneField(LessonSlot, on_delete=models.CASCADE, related_name='booking')
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Confirmed')
+    date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-date']
 
     def __str__(self):
-        return f"{self.student.username} -> {self.lesson_slot}"
+        return f"{self.student.username} -> {self.tutor.user.username} @ {self.date}"

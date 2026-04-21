@@ -1,0 +1,12 @@
+<header class="header">
+  <div class="container">
+    <a routerLink="/" class="logo">KBTU TUTOR</a>
+    <nav class="nav">
+      <a routerLink="/">Найти Тьютора</a>
+      <a routerLink="/profile">Стать Тьютором</a>
+    </nav>
+    <button type="button" class="auth-btn" (click)="goToAuthOrProfile()">
+      {{ isLoggedIn ? 'Профиль' : 'Вход/Регистрация' }}
+    </button>
+  </div>
+</header>

@@ -6,3 +6,39 @@
   box-shadow: 0 10px 20px rgba(17, 24, 39, 0.12);
   padding: 1.2rem;
 }
+
+.action-btn {
+  margin-top: 0.8rem;
+  border: none;
+  background: #2359cf;
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.notice {
+  margin-top: 0.6rem;
+  color: #25603a;
+}
+
+.rating-widget {
+  margin-top: 1rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.star-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #d1d5db;
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}

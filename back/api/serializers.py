@@ -85,14 +85,10 @@ class LessonSlotSerializer(serializers.ModelSerializer):
 
 class BookingSerializer(serializers.ModelSerializer):
     student_username = serializers.CharField(source='student.username', read_only=True)
-    lesson_slot_detail = LessonSlotSerializer(source='lesson_slot', read_only=True)
+    tutor_name = serializers.CharField(source='tutor.user.username', read_only=True)
+    tutor_subject = serializers.CharField(source='tutor.subject.name', read_only=True, default='')
 
     class Meta:
         model = Booking
-        fields = ['id', 'student', 'student_username', 'lesson_slot', 'lesson_slot_detail', 'created_at', 'status']
-        read_only_fields = ['student', 'created_at']
-
-    def validate_lesson_slot(self, slot):
-        if slot.is_booked:
-            raise serializers.ValidationError("This slot is already booked.")
-        return slot
+        fields = ['id', 'tutor', 'tutor_name', 'tutor_subject', 'student', 'student_username', 'date', 'status']
+        read_only_fields = ['student']

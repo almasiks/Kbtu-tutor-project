@@ -23,5 +23,5 @@ class LessonSlotAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['id', 'student', 'lesson_slot', 'status', 'created_at']
+    list_display = ['id', 'student', 'tutor', 'date', 'status']
     list_filter = ['status']
