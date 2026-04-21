@@ -1,0 +1,422 @@
+{
+  "info": {
+    "name": "KBTU Tutor Project API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/auth/register/",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"student1\", \"email\": \"student1@kbtu.kz\", \"password\": \"pass1234\", \"is_tutor\": false}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\"token\": \"abc123token\", \"username\": \"student1\"}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/auth/login/",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"student1\", \"password\": \"pass1234\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"token\": \"abc123token\", \"username\": \"student1\", \"user_id\": 1}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/auth/logout/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"detail\": \"Logged out.\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "List Subjects",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/subjects/"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[{\"id\": 1, \"name\": \"Mathematics\", \"description\": \"Algebra, Calculus, etc.\"}, {\"id\": 2, \"name\": \"Physics\", \"description\": \"\"}]"
+            }
+          ]
+        },
+        {
+          "name": "Get Subject",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/subjects/1/"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"name\": \"Mathematics\", \"description\": \"Algebra, Calculus, etc.\"}"
+            }
+          ]
+        },
+        {
+          "name": "Create Subject (admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/subjects/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Mathematics\", \"description\": \"Algebra, Calculus, etc.\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\"id\": 1, \"name\": \"Mathematics\", \"description\": \"Algebra, Calculus, etc.\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tutors",
+      "item": [
+        {
+          "name": "List Tutors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/tutors/",
+              "query": [{ "key": "subject", "value": "1", "disabled": true }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[{\"id\": 1, \"user\": {\"id\": 2, \"username\": \"tutor1\", \"email\": \"tutor1@kbtu.kz\"}, \"subject\": {\"id\": 1, \"name\": \"Mathematics\", \"description\": \"\"}, \"experience_years\": 3, \"bio\": \"Experienced math tutor\", \"hourly_rate\": \"5000.00\", \"rating\": \"4.80\"}]"
+            }
+          ]
+        },
+        {
+          "name": "Create Tutor Profile",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/tutors/profile/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"subject_id\": 1, \"experience_years\": 3, \"bio\": \"Experienced math tutor\", \"hourly_rate\": \"5000.00\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\"id\": 1, \"user\": {\"id\": 2, \"username\": \"tutor1\", \"email\": \"tutor1@kbtu.kz\"}, \"subject\": {\"id\": 1, \"name\": \"Mathematics\", \"description\": \"\"}, \"experience_years\": 3, \"bio\": \"Experienced math tutor\", \"hourly_rate\": \"5000.00\", \"rating\": \"0.00\"}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Tutor Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/tutors/profile/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"user\": {\"id\": 2, \"username\": \"tutor1\", \"email\": \"tutor1@kbtu.kz\"}, \"subject\": {\"id\": 1, \"name\": \"Mathematics\", \"description\": \"\"}, \"experience_years\": 3, \"bio\": \"Experienced math tutor\", \"hourly_rate\": \"5000.00\", \"rating\": \"4.80\"}"
+            }
+          ]
+        },
+        {
+          "name": "Update Tutor Profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base}}/tutors/profile/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"bio\": \"Updated bio\", \"hourly_rate\": \"6000.00\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"user\": {\"id\": 2, \"username\": \"tutor1\", \"email\": \"tutor1@kbtu.kz\"}, \"subject\": {\"id\": 1, \"name\": \"Mathematics\", \"description\": \"\"}, \"experience_years\": 3, \"bio\": \"Updated bio\", \"hourly_rate\": \"6000.00\", \"rating\": \"4.80\"}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Tutor Profile",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/tutors/profile/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lesson Slots",
+      "item": [
+        {
+          "name": "List My Slots",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/slots/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[{\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": false}]"
+            }
+          ]
+        },
+        {
+          "name": "Create Slot",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/slots/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": false}"
+            }
+          ]
+        },
+        {
+          "name": "Get Slot",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/slots/1/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": false}"
+            }
+          ]
+        },
+        {
+          "name": "Update Slot (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base}}/slots/1/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"end_time\": \"2026-04-20T12:00:00Z\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T12:00:00Z\", \"is_booked\": false}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Slot",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/slots/1/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/bookings/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[{\"id\": 1, \"student\": 1, \"student_username\": \"student1\", \"lesson_slot\": 1, \"lesson_slot_detail\": {\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": true}, \"created_at\": \"2026-04-18T08:00:00Z\", \"status\": \"Confirmed\"}]"
+            }
+          ]
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/bookings/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"lesson_slot\": 1}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\"id\": 1, \"student\": 1, \"student_username\": \"student1\", \"lesson_slot\": 1, \"lesson_slot_detail\": {\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": true}, \"created_at\": \"2026-04-18T08:00:00Z\", \"status\": \"Confirmed\"}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base}}/bookings/1/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Token {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"Cancelled\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"id\": 1, \"student\": 1, \"student_username\": \"student1\", \"lesson_slot\": 1, \"lesson_slot_detail\": {\"id\": 1, \"tutor\": 1, \"tutor_username\": \"tutor1\", \"start_time\": \"2026-04-20T10:00:00Z\", \"end_time\": \"2026-04-20T11:00:00Z\", \"is_booked\": false}, \"created_at\": \"2026-04-18T08:00:00Z\", \"status\": \"Cancelled\"}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Booking",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/bookings/1/",
+            "header": [{ "key": "Authorization", "value": "Token {{token}}" }]
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
